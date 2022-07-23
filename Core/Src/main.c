@@ -26,7 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "nr_micro_shell.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -93,7 +93,7 @@ int main(void)
   MX_RNG_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  shell_init();
   /* USER CODE END 2 */
 
   /* Init scheduler */

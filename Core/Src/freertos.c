@@ -25,7 +25,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 
+#include "usart.h"
+#include "nr_micro_shell.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +48,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+TaskHandle_t uart1_task = NULL;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -57,7 +60,7 @@ const osThreadAttr_t defaultTask_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+static void uart1_task_entry(void *arg);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -125,6 +128,12 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  if(xTaskCreate(uart1_task_entry, 
+  "uat1", 8*1024, NULL, 
+  (osPriority_t) osPriorityNormal, &uart1_task) != 0)
+  {
+
+  }
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -144,15 +153,49 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
-  for(;;)
+  for (;;)
   {
-    osDelay(1);
+    osDelay(200);
+    break;
   }
+  osThreadExit();
   /* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+static void uart1_task_entry(void *arg)
+{
+  uint8_t c = 0;
+  HAL_StatusTypeDef ret;
+  while (1)
+  {
+    ret = HAL_UART_Receive(&huart1, &c, 1, 0xFFFF);
+    if(ret == HAL_OK)
+    {
+      shell(c);
+      HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+    }
+    // else
+    // {
+    //   vTaskDelay(200);
+    //   HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+    // }
+
+  }
+  uart1_task = NULL;
+  vTaskDelete(NULL);
+}
+
+
+
+
+int _write(int fd, char *ptr, int len)  
+{  
+  HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, 0xFFFF);
+  return len;
+}
+
 
 /* USER CODE END Application */
 

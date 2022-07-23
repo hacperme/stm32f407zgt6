@@ -1,0 +1,4 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "cortex-debug.armToolchainPath": "${workspaceRoot}/tools/gcc_arm_none_eabi/bin"
+}

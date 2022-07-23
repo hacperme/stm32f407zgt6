@@ -29,7 +29,7 @@ OPT = -Og
 # paths
 #######################################
 # Build path
-BUILD_DIR = build
+BUILD_DIR = out
 
 ######################################
 # source
@@ -73,6 +73,15 @@ Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+
+C_SOURCES += \
+Middlewares/Third_Party/nr_micro_shell/src/ansi_port.c \
+Middlewares/Third_Party/nr_micro_shell/src/ansi.c \
+Middlewares/Third_Party/nr_micro_shell/src/nr_micro_shell.c \
+application/shell/shell_cmds.c \
+application/os/platform_stub.c \
+
+
 
 # ASM sources
 ASM_SOURCES =  \
@@ -139,11 +148,14 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include
 
+C_INCLUDES +=  \
+-IMiddlewares/Third_Party/nr_micro_shell/inc \
+
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -Werror
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -202,7 +214,8 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)
+# -rm -fR $(BUILD_DIR)
+	-del $(BUILD_DIR) /S /Q
   
 #######################################
 # dependencies
