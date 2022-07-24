@@ -80,12 +80,15 @@ Middlewares/Third_Party/nr_micro_shell/src/ansi.c \
 Middlewares/Third_Party/nr_micro_shell/src/nr_micro_shell.c \
 application/shell/shell_cmds.c \
 application/os/platform_stub.c \
+Middlewares/Third_Party/cm_backtrace/cm_backtrace.c \
 
 
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32f407xx.s
+startup_stm32f407xx.s \
+Middlewares/Third_Party/cm_backtrace/fault_handler/gcc/cmb_fault.s \
+
 
 
 #######################################
@@ -150,7 +153,9 @@ C_INCLUDES =  \
 
 C_INCLUDES +=  \
 -IMiddlewares/Third_Party/nr_micro_shell/inc \
-
+-IMiddlewares/Third_Party/cm_backtrace \
+-IMiddlewares/Third_Party/cm_backtrace/Languages/zh-CN \
+-IMiddlewares/Third_Party/cm_backtrace/Languages/en-US \
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

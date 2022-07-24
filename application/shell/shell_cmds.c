@@ -143,6 +143,27 @@ static void reboot_cmd(char argc, char *argv)
    HAL_NVIC_SystemReset();
 }
 
+
+void fault_test_by_div0(void) {
+    volatile int * SCB_CCR = (volatile int *) 0xE000ED14; // SCB->CCR
+    int x, y, z;
+
+    *SCB_CCR |= (1 << 4); /* bit4: DIV_0_TRP. */
+
+    x = 10;
+    y = 0;
+    z = x / y;
+    printf("z:%d\n", z);
+}
+
+static void test_cmd(char argc, char *argv)
+{
+   fault_test_by_div0();
+}
+
+
+
+
 const static_cmd_st static_cmd[] =
 {
    {"help", help_cmd, NULL},
@@ -150,5 +171,6 @@ const static_cmd_st static_cmd[] =
    {"tasklist", tasklist_cmd, NULL},
    {"uptime", uptime_cmd, NULL},
    {"reboot", reboot_cmd, NULL},
+   {"test", test_cmd, NULL},
    {"\0",NULL}
 };
