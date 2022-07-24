@@ -46,7 +46,8 @@ if "%TARGET_NAME%"=="clean" (
 )
 
 if "%TARGET_NAME%"=="flash" (
-  call %OPENOCD_PATH% -f openocd.cfg -c init -c halt -c "flash write_image erase target\\stm32_test_project.bin 0x08000000" -c reset -c shutdown
+  @REM call %OPENOCD_PATH% -f openocd.cfg -c init -c halt -c "flash write_image erase target\\stm32f407zgt6.bin 0x08000000" -c reset -c shutdown
+  call %OPENOCD_PATH% -f openocd.cfg -c "program target\\stm32f407zgt6.elf reset exit"
 )
 
 goto byebye
