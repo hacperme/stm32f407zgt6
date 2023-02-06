@@ -82,6 +82,11 @@ application/shell/shell_cmds.c \
 application/os/platform_stub.c \
 Middlewares/Third_Party/cm_backtrace/cm_backtrace.c \
 
+# qth-sdk-mcu-hex
+C_SOURCES += \
+application/qth-sdk-mcu-hex/mcu_api.c \
+application/qth-sdk-mcu-hex/protocol.c \
+application/qth-sdk-mcu-hex/system.c \
 
 
 # ASM sources
@@ -156,6 +161,9 @@ C_INCLUDES +=  \
 -IMiddlewares/Third_Party/cm_backtrace \
 -IMiddlewares/Third_Party/cm_backtrace/Languages/zh-CN \
 -IMiddlewares/Third_Party/cm_backtrace/Languages/en-US \
+
+C_INCLUDES +=  \
+-Iapplication/qth-sdk-mcu-hex \
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

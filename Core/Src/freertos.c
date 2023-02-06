@@ -29,6 +29,8 @@
 
 #include "usart.h"
 #include "nr_micro_shell.h"
+#include "wifi.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -153,10 +155,13 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
+  wifi_protocol_init();
   for (;;)
   {
+    wifi_uart_service();
     osDelay(200);
-    break;
+    // break;
+
   }
   osThreadExit();
   /* USER CODE END StartDefaultTask */
@@ -173,7 +178,8 @@ static void uart1_task_entry(void *arg)
     ret = HAL_UART_Receive(&huart1, &c, 1, 0xFFFF);
     if(ret == HAL_OK)
     {
-      shell(c);
+      // shell(c);
+      uart_receive_input(c);
       HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
     }
     // else
