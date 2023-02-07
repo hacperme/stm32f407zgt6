@@ -22,13 +22,13 @@ typedef struct
  * @param[in] {void} 无
  * @return 无
  */
-int mcu_dp_struct_init(unsigned char dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
+int mcu_dp_struct_init(unsigned short dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
 
-int mcu_dp_struct_add_item(unsigned char dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
+int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
 
 int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
 
-int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned char *dpid, unsigned char *type, unsigned char *value, unsigned short *len);
+int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned short *dpid, unsigned char *type, unsigned char *value, unsigned short *len);
 
 
 /**
@@ -105,7 +105,7 @@ unsigned long byte_to_int(const unsigned char value[4]);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update(unsigned char dpid,unsigned char value);
+unsigned char mcu_dp_bool_update(unsigned short dpid,unsigned char value);
 
 /**
  * @brief  value型dp数据上传
@@ -122,7 +122,7 @@ unsigned char mcu_dp_bool_update(unsigned char dpid,unsigned char value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update(unsigned char dpid,unsigned long value);
+unsigned char mcu_dp_value_update(unsigned short dpid,unsigned long value);
 
 /**
  * @brief  fault型dp数据上传
@@ -131,7 +131,7 @@ unsigned char mcu_dp_value_update(unsigned char dpid,unsigned long value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update(unsigned char dpid,unsigned long value);
+unsigned char mcu_dp_fault_update(unsigned short dpid,unsigned long value);
 
 
 /**
@@ -142,7 +142,7 @@ unsigned char mcu_dp_fault_update(unsigned char dpid,unsigned long value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_string_update(unsigned char dpid,const unsigned char value[],unsigned short len);
+unsigned char mcu_dp_string_update(unsigned short dpid,const unsigned char value[],unsigned short len);
 
 
 /**
@@ -153,7 +153,7 @@ unsigned char mcu_dp_string_update(unsigned char dpid,const unsigned char value[
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_struct_update(unsigned char dpid, const unsigned char value[], unsigned short len);
+unsigned char mcu_dp_struct_update(mcu_dp_struct_t *st);
 
 #ifdef MCU_DP_UPLOAD_SYN
 /**
@@ -163,7 +163,7 @@ unsigned char mcu_dp_struct_update(unsigned char dpid, const unsigned char value
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update_syn(unsigned char dpid,unsigned char value);
+unsigned char mcu_dp_bool_update_syn(unsigned short dpid,unsigned char value);
 
 /**
  * @brief  value型dp数据同步上传
@@ -172,7 +172,7 @@ unsigned char mcu_dp_bool_update_syn(unsigned char dpid,unsigned char value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update_syn(unsigned char dpid,unsigned long value);
+unsigned char mcu_dp_value_update_syn(unsigned short dpid,unsigned long value);
 
 /**
  * @brief  fault型dp数据同步上传
@@ -181,7 +181,7 @@ unsigned char mcu_dp_value_update_syn(unsigned char dpid,unsigned long value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update_syn(unsigned char dpid,unsigned long value);
+unsigned char mcu_dp_fault_update_syn(unsigned short dpid,unsigned long value);
 #endif
 
 /**

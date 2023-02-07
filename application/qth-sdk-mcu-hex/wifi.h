@@ -89,7 +89,7 @@
 //下发命令
 //=============================================================================
 typedef struct {
-  unsigned char dp_id;                              //dp序号
+  unsigned short dp_id;                              //dp序号
   unsigned char dp_type;                            //dp类型
 } DOWNLOAD_CMD_S;
 

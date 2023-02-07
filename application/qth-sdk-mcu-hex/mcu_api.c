@@ -184,14 +184,15 @@ unsigned long byte_to_int(const unsigned char value[4])
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update(unsigned char dpid,unsigned char value)
+unsigned char mcu_dp_bool_update(unsigned short dpid,unsigned char value)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
-    
-    send_len = set_wifi_uart_byte(send_len,dpid);
+
+    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
+    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
     send_len = set_wifi_uart_byte(send_len,DP_TYPE_BOOL);
     //
     send_len = set_wifi_uart_byte(send_len,0);
@@ -215,14 +216,15 @@ unsigned char mcu_dp_bool_update(unsigned char dpid,unsigned char value)
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update(unsigned char dpid,unsigned long value)
+unsigned char mcu_dp_value_update(unsigned short dpid, unsigned long value)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len,dpid);
+    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
+    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
     send_len = set_wifi_uart_byte(send_len,DP_TYPE_VALUE);
     //
     send_len = set_wifi_uart_byte(send_len,0);
@@ -245,14 +247,15 @@ unsigned char mcu_dp_value_update(unsigned char dpid,unsigned long value)
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update(unsigned char dpid,unsigned long value)
+unsigned char mcu_dp_fault_update(unsigned short dpid,unsigned long value)
 {
     unsigned short send_len = 0;
      
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len,dpid);
+    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
+    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
     send_len = set_wifi_uart_byte(send_len,DP_TYPE_BITMAP);
     //
     send_len = set_wifi_uart_byte(send_len,0);
@@ -285,16 +288,16 @@ unsigned char mcu_dp_fault_update(unsigned char dpid,unsigned long value)
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_string_update(unsigned char dpid,const unsigned char value[],unsigned short len)
+unsigned char mcu_dp_string_update(unsigned short dpid, const unsigned char value[],unsigned short len)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     //
-    send_len = set_wifi_uart_byte(send_len,dpid);
+    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
+    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
     send_len = set_wifi_uart_byte(send_len,DP_TYPE_STRING);
-    send_len = set_wifi_uart_byte(send_len,0);
     //
     send_len = set_wifi_uart_byte(send_len,len / 0x100);
     send_len = set_wifi_uart_byte(send_len,len % 0x100);
@@ -314,21 +317,16 @@ unsigned char mcu_dp_string_update(unsigned char dpid,const unsigned char value[
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_struct_update(unsigned char dpid, const unsigned char value[], unsigned short len)
+unsigned char mcu_dp_struct_update(mcu_dp_struct_t *st)
 {
     unsigned short send_len = 0;
+    if(st == NULL)
+        return ERROR;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
-    //
-    send_len = set_wifi_uart_byte(send_len,dpid);
-    send_len = set_wifi_uart_byte(send_len,DP_TYPE_STRUCT);
-    send_len = set_wifi_uart_byte(send_len,0);
-    //
-    send_len = set_wifi_uart_byte(send_len,len / 0x100);
-    send_len = set_wifi_uart_byte(send_len,len % 0x100);
-    //
-    send_len = set_wifi_uart_buffer(send_len,(unsigned char *)value,len);
+
+    send_len = set_wifi_uart_buffer(send_len,(unsigned char *)st->buffer, st->offset);
     
     wifi_uart_write_frame(STATE_UPLOAD_CMD,MCU_TX_VER,send_len);
     
@@ -341,7 +339,7 @@ unsigned char mcu_dp_struct_update(unsigned char dpid, const unsigned char value
  * @param[in] {void} 无
  * @return 无
  */
-int mcu_dp_struct_init(unsigned char dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len)
+int mcu_dp_struct_init(unsigned short dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len)
 {
     if(st == NULL || buffer == NULL || buffer_len == 0)
         return ERROR;
@@ -350,23 +348,155 @@ int mcu_dp_struct_init(unsigned char dpid, mcu_dp_struct_t *st, unsigned char *b
     st->buffer_len = buffer_len;
     st->offset = 0;
 
-    st->buffer[st->offset++] = dpid;
+    st->buffer[st->offset++] = (dpid >> 8);
+    st->buffer[st->offset++] = (dpid & 0xff);
     st->buffer[st->offset++] = DP_TYPE_STRUCT;
-    st->buffer[st->offset++] = 0;
-
     // length
-    st->buffer[st->offset++] = 0;
-    st->buffer[st->offset++] = 0;
-
+    st->buffer[st->offset++] = st->value_len / 0x100;
+    st->buffer[st->offset++] = st->value_len % 0x100;
 
     return SUCCESS;
 }
 
-int mcu_dp_struct_add_item(unsigned char dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
+int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len)
+{
+    if (st == NULL || value == NULL || len == 0)
+        return ERROR;
 
-int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
+    if (st->offset + len + 5 > st->buffer_len)
+        return ERROR;
+    switch (type)
+    {
+    case DP_TYPE_RAW:
+        st->buffer[st->offset++] = (dpid >> 8);
+        st->buffer[st->offset++] = (dpid & 0xff);
+        st->buffer[st->offset++] = DP_TYPE_RAW;
+        // length
+        st->buffer[st->offset++] = len / 0x100;
+        st->buffer[st->offset++] = len % 0x100;
+        my_memcpy(&st->buffer[st->offset], value, len);
+        st->offset += len;
 
-int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned char *dpid, unsigned char *type, unsigned char *value, unsigned short *len);
+        // 更新总长度
+        st->value_len+=len+5;
+        st->buffer[3] = st->value_len / 0x100;
+        st->buffer[4] = st->value_len % 0x100;
+        break;
+    case DP_TYPE_BOOL:
+        st->buffer[st->offset++] = (dpid >> 8);
+        st->buffer[st->offset++] = (dpid & 0xff);
+        st->buffer[st->offset++] = DP_TYPE_BOOL;
+        // length
+        st->buffer[st->offset++] = 0;
+        st->buffer[st->offset++] = 1;
+        st->buffer[st->offset++] = (value[0] == FALSE) ? FALSE : 1;
+
+        // 更新总长度
+        st->value_len+=len+5;
+        st->buffer[3] = st->value_len / 0x100;
+        st->buffer[4] = st->value_len % 0x100;
+        break;
+    case DP_TYPE_VALUE:
+        st->buffer[st->offset++] = (dpid >> 8);
+        st->buffer[st->offset++] = (dpid & 0xff);
+        st->buffer[st->offset++] = DP_TYPE_VALUE;
+        // length
+        st->buffer[st->offset++] = 0;
+        st->buffer[st->offset++] = 4;
+        st->buffer[st->offset++] = value[3];
+        st->buffer[st->offset++] = value[2];
+        st->buffer[st->offset++] = value[1];
+        st->buffer[st->offset++] = value[0];
+
+        // 更新总长度
+        st->value_len+=len+5;
+        st->buffer[3] = st->value_len / 0x100;
+        st->buffer[4] = st->value_len % 0x100;
+        break;
+
+    case DP_TYPE_STRING:
+        st->buffer[st->offset++] = (dpid >> 8);
+        st->buffer[st->offset++] = (dpid & 0xff);
+        st->buffer[st->offset++] = DP_TYPE_STRING;
+        // length
+        st->buffer[st->offset++] = len / 0x100;
+        st->buffer[st->offset++] = len % 0x100;
+        my_memcpy(&st->buffer[st->offset], value, len);
+        st->offset += len;
+
+        // 更新总长度
+        st->value_len+=len+5;
+        st->buffer[3] = st->value_len / 0x100;
+        st->buffer[4] = st->value_len % 0x100;
+
+        break;
+    case DP_TYPE_BITMAP:
+        st->buffer[st->offset++] = (dpid >> 8);
+        st->buffer[st->offset++] = (dpid & 0xff);
+        st->buffer[st->offset++] = DP_TYPE_BITMAP;
+        // length
+        st->buffer[st->offset++] = len / 0x100;
+        st->buffer[st->offset++] = len % 0x100;
+        my_memcpy(&st->buffer[st->offset], value, len);
+        st->offset += len;
+
+        // 更新总长度
+        st->value_len+=len+5;
+        st->buffer[3] = st->value_len / 0x100;
+        st->buffer[4] = st->value_len % 0x100;
+
+        break;
+    case DP_TYPE_DOUBLE:
+        // todo
+        break;
+
+    case DP_TYPE_STRUCT:
+        // 不嵌套增加结构体
+        break;
+    default:
+        break;
+    }
+    return SUCCESS;
+}
+
+int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len)
+{
+
+    if (st == NULL || buffer == NULL || buffer_len == 0)
+        return ERROR;
+
+    st->buffer = buffer;
+    st->buffer_len = buffer_len;
+    st->offset = 0;
+    st->value_len = 0;
+
+    return SUCCESS;
+}
+
+int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned short *dpid, unsigned char *type, unsigned char *value, unsigned short *len)
+{
+    unsigned short offset = 0;
+    unsigned short value_len = 0;
+    
+    if (st == NULL || dpid == NULL || type == NULL || value == NULL || len == NULL)
+        return ERROR;
+    if ((st->offset+5) > st->buffer_len)
+        return ERROR;
+
+    *dpid = (st->buffer[st->offset] << 8) | st->buffer[st->offset+1];
+    st->offset += 2;
+    *type = st->buffer[st->offset++];
+    value_len = (st->buffer[st->offset] << 8) | st->buffer[st->offset+1];
+    st->offset += 2;
+    *len = value_len;
+
+    offset = st->offset + 5;
+
+    my_memcpy(value, &st->buffer[offset], value_len);
+    st->offset += value_len;
+
+    return SUCCESS;
+}
 
 /**
  * @brief  bool型dp数据同步上传
@@ -375,14 +505,15 @@ int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned char *dpid, unsigned ch
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update_syn(unsigned char dpid,unsigned char value)
+unsigned char mcu_dp_bool_update_syn(unsigned short dpid,unsigned char value)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len,dpid);
+    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
+    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
     send_len = set_wifi_uart_byte(send_len,DP_TYPE_BOOL);
     //
     send_len = set_wifi_uart_byte(send_len,0);
@@ -406,14 +537,15 @@ unsigned char mcu_dp_bool_update_syn(unsigned char dpid,unsigned char value)
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update_syn(unsigned char dpid,unsigned long value)
+unsigned char mcu_dp_value_update_syn(unsigned short dpid,unsigned long value)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len,dpid);
+    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
+    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
     send_len = set_wifi_uart_byte(send_len,DP_TYPE_VALUE);
     //
     send_len = set_wifi_uart_byte(send_len,0);
@@ -436,14 +568,15 @@ unsigned char mcu_dp_value_update_syn(unsigned char dpid,unsigned long value)
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update_syn(unsigned char dpid,unsigned long value)
+unsigned char mcu_dp_fault_update_syn(unsigned short dpid,unsigned long value)
 {
     unsigned short send_len = 0;
      
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len,dpid);
+    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
+    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
     send_len = set_wifi_uart_byte(send_len,DP_TYPE_BITMAP);
     //
     send_len = set_wifi_uart_byte(send_len,0);
