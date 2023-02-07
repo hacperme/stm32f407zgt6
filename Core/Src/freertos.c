@@ -155,38 +155,45 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
-  wifi_protocol_init();
+  
   for (;;)
   {
-    wifi_uart_service();
+    
     osDelay(200);
-    // break;
+     break;
 
   }
   osThreadExit();
   /* USER CODE END StartDefaultTask */
 }
 
+  uint8_t c = 0;
+
+  void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+  {
+    if(huart->Instance == USART1)
+    {
+      
+      uart_receive_input(c);
+
+      HAL_UART_Receive_IT(&huart1, &c, 1);
+    }
+  }
+
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 static void uart1_task_entry(void *arg)
 {
   uint8_t c = 0;
-  HAL_StatusTypeDef ret;
+
+  wifi_protocol_init();
+  HAL_UART_Receive_IT(&huart1, &c, 1);
   while (1)
   {
-    ret = HAL_UART_Receive(&huart1, &c, 1, 0xFFFF);
-    if(ret == HAL_OK)
-    {
-      // shell(c);
-      uart_receive_input(c);
-      HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-    }
-    // else
-    // {
-    //   vTaskDelay(200);
-    //   HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-    // }
+    
+    wifi_uart_service();
+    osDelay(200);
+    
 
   }
   uart1_task = NULL;

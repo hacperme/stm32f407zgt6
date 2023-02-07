@@ -95,7 +95,7 @@ int main(void)
   MX_RNG_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  shell_init();
+  // shell_init();
   cm_backtrace_init("CmBacktrace", HARDWARE_VERSION, SOFTWARE_VERSION);
   /* USER CODE END 2 */
 
