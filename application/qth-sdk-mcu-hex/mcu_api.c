@@ -278,6 +278,97 @@ unsigned char mcu_dp_fault_update(unsigned char dpid,unsigned long value)
 }
 
 /**
+ * @brief  string型dp数据上传
+ * @param[in] {dpid} dpid号
+ * @param[in] {value} 当前dp值指针
+ * @param[in] {len} 数据长度
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_dp_string_update(unsigned char dpid,const unsigned char value[],unsigned short len)
+{
+    unsigned short send_len = 0;
+    
+    if(stop_update_flag == ENABLE)
+        return SUCCESS;
+    //
+    send_len = set_wifi_uart_byte(send_len,dpid);
+    send_len = set_wifi_uart_byte(send_len,DP_TYPE_STRING);
+    send_len = set_wifi_uart_byte(send_len,0);
+    //
+    send_len = set_wifi_uart_byte(send_len,len / 0x100);
+    send_len = set_wifi_uart_byte(send_len,len % 0x100);
+    //
+    send_len = set_wifi_uart_buffer(send_len,(unsigned char *)value,len);
+    
+    wifi_uart_write_frame(STATE_UPLOAD_CMD,MCU_TX_VER,send_len);
+    
+    return SUCCESS;
+}
+
+/**
+ * @brief  struct/arrary型dp数据上传
+ * @param[in] {dpid} dpid号
+ * @param[in] {value} 当前dp值指针
+ * @param[in] {len} 数据长度
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_dp_struct_update(unsigned char dpid, const unsigned char value[], unsigned short len)
+{
+    unsigned short send_len = 0;
+    
+    if(stop_update_flag == ENABLE)
+        return SUCCESS;
+    //
+    send_len = set_wifi_uart_byte(send_len,dpid);
+    send_len = set_wifi_uart_byte(send_len,DP_TYPE_STRUCT);
+    send_len = set_wifi_uart_byte(send_len,0);
+    //
+    send_len = set_wifi_uart_byte(send_len,len / 0x100);
+    send_len = set_wifi_uart_byte(send_len,len % 0x100);
+    //
+    send_len = set_wifi_uart_buffer(send_len,(unsigned char *)value,len);
+    
+    wifi_uart_write_frame(STATE_UPLOAD_CMD,MCU_TX_VER,send_len);
+    
+    return SUCCESS;
+}
+
+
+/**
+ * @brief  struct/arrary型dp数据点初始化
+ * @param[in] {void} 无
+ * @return 无
+ */
+int mcu_dp_struct_init(unsigned char dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len)
+{
+    if(st == NULL || buffer == NULL || buffer_len == 0)
+        return ERROR;
+    
+    st->buffer = buffer;
+    st->buffer_len = buffer_len;
+    st->offset = 0;
+
+    st->buffer[st->offset++] = dpid;
+    st->buffer[st->offset++] = DP_TYPE_STRUCT;
+    st->buffer[st->offset++] = 0;
+
+    // length
+    st->buffer[st->offset++] = 0;
+    st->buffer[st->offset++] = 0;
+
+
+    return SUCCESS;
+}
+
+int mcu_dp_struct_add_item(unsigned char dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
+
+int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
+
+int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned char *dpid, unsigned char *type, unsigned char *value, unsigned short *len);
+
+/**
  * @brief  bool型dp数据同步上传
  * @param[in] {dpid} dpid号
  * @param[in] {value} 当前dp值指针
