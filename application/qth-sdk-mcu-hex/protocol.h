@@ -121,7 +121,12 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
 //备注:
 #define DPID_TEST_FAULT 6
 
+#define DPID_TEST_STRUCT 7
 
+#if defined(DPID_TEST_STRUCT)
+#define DPID_TEST_STRUCT_SUB_VALUE 0
+#define DPID_TEST_STRUCT_SUB_BOOL 1
+#endif
 
 /**
  * @brief  串口发送数据
@@ -148,7 +153,7 @@ void all_data_update(void);
  * -           1(SUCCESS): 成功
  * @note   该函数用户不能修改
  */
-unsigned char dp_download_handle(unsigned char dpid,const unsigned char value[], unsigned short length);
+unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[], unsigned short length);
 
 /**
  * @brief  获取所有dp命令总和

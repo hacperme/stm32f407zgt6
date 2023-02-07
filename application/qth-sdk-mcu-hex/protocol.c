@@ -27,7 +27,8 @@ const DOWNLOAD_CMD_S download_cmd[] =
 {
   {DPID_TEST_BOOL, DP_TYPE_BOOL},
   {DPID_TEST_VALUE, DP_TYPE_VALUE},
-  {DPID_TEST_FAULT,DP_TYPE_BITMAP}
+  {DPID_TEST_FAULT,DP_TYPE_BITMAP},
+  {DPID_TEST_STRUCT,DP_TYPE_STRUCT},
 };
 
 
@@ -88,6 +89,16 @@ void all_data_update(void)
     mcu_dp_bool_update(DPID_TEST_BOOL,0); //BOOL型数据上报;
     mcu_dp_value_update(DPID_TEST_VALUE,12); //VALUE型数据上报;
     mcu_dp_fault_update(DPID_TEST_FAULT,0);//故障型数据上报;
+
+    mcu_dp_struct_t st = {0};
+    unsigned char buf[200] = {0};
+    mcu_dp_struct_init(DPID_TEST_STRUCT, &st, buf, sizeof(buf));
+    int test_value = 123;
+    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_VALUE, &st, DP_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value));
+    unsigned char test_bool = 1;
+    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_BOOL, &st, DP_TYPE_BOOL, &test_bool, sizeof(test_bool));
+    mcu_dp_struct_update(&st); //结构体型数据上报;
+
 }
 
 
@@ -154,6 +165,77 @@ static unsigned char dp_download_test_value_handle(const unsigned char value[], 
         return ERROR;
 }
 
+/*****************************************************************************
+函数名称 : dp_download_test_struct_handle
+功能描述 : 针对DPID_TEST_STRUCT的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char dp_download_test_struct_handle(const unsigned char value[], unsigned short length)
+{
+    // 示例:当前DP类型为STRUCT
+    unsigned char ret = SUCCESS;
+
+    mcu_dp_struct_t st = {0};
+    unsigned short dpid;
+    unsigned char dp_type;
+    unsigned char dp_value[100] = {0};
+    unsigned short dp_length = 0;
+
+    mcu_dp_struct_parser(&st, (unsigned char *)value, length);
+
+    while (mcu_dp_struct_get_item(&st, &dpid, &dp_type, dp_value, &dp_length))
+    {
+        switch (dpid)
+        {
+        case DPID_TEST_STRUCT_SUB_VALUE:
+        {
+            unsigned long int_value;
+
+            int_value = mcu_get_dp_download_value(dp_value, dp_length);
+            if (int_value == 0)
+            {
+                
+            }
+            else
+            {
+ 
+            }
+
+            // todo: value data processing
+        }
+        break;
+        case DPID_TEST_STRUCT_SUB_BOOL:
+        {
+            unsigned char bool_value;
+
+            bool_value = mcu_get_dp_download_bool(value, length);
+            if (bool_value == 0)
+            {
+                // bool off
+            }
+            else
+            {
+                // bool on
+            }
+        }
+        break;
+
+        default:
+            break;
+        }
+    }
+
+    // There should be a report after processing the DP
+
+    if (ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
 /******************************************************************************
                                 WARNING!!!                     
 此部分函数用户请勿修改!!
@@ -169,7 +251,7 @@ static unsigned char dp_download_test_value_handle(const unsigned char value[], 
  * -           1(SUCCESS): 成功
  * @note   该函数用户不能修改
  */
-unsigned char dp_download_handle(unsigned char dpid,const unsigned char value[], unsigned short length)
+unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[], unsigned short length)
 {
     /*********************************
     当前函数处理可下发/可上报数据调用                    
@@ -186,6 +268,9 @@ unsigned char dp_download_handle(unsigned char dpid,const unsigned char value[],
             //测试VALUE类型数据处理函数
             ret = dp_download_test_value_handle(value,length);
         break;
+        case DPID_TEST_STRUCT:
+            //测试STRUCT类型数据处理函数
+            ret = dp_download_test_struct_handle(value,length);
         default:
         break;
     }

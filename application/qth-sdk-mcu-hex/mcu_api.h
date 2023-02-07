@@ -8,6 +8,29 @@
   #define MCU_API_EXTERN   extern
 #endif
 
+
+typedef struct 
+{
+  unsigned char *buffer;
+  unsigned short buffer_len;
+  unsigned short value_len;
+  unsigned short offset;
+}mcu_dp_struct_t;
+
+/**
+ * @brief  struct/arrary型dp数据点初始化
+ * @param[in] {void} 无
+ * @return 无
+ */
+int mcu_dp_struct_init(unsigned short dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
+
+int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
+
+int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
+
+int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned short *dpid, unsigned char *type, unsigned char *value, unsigned short *len);
+
+
 /**
  * @brief  hex转bcd
  * @param[in] {Value_H} 高字节
@@ -82,7 +105,7 @@ unsigned long byte_to_int(const unsigned char value[4]);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update(unsigned char dpid,unsigned char value);
+unsigned char mcu_dp_bool_update(unsigned short dpid,unsigned char value);
 
 /**
  * @brief  value型dp数据上传
@@ -99,7 +122,7 @@ unsigned char mcu_dp_bool_update(unsigned char dpid,unsigned char value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update(unsigned char dpid,unsigned long value);
+unsigned char mcu_dp_value_update(unsigned short dpid,unsigned long value);
 
 /**
  * @brief  fault型dp数据上传
@@ -108,7 +131,29 @@ unsigned char mcu_dp_value_update(unsigned char dpid,unsigned long value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update(unsigned char dpid,unsigned long value);
+unsigned char mcu_dp_fault_update(unsigned short dpid,unsigned long value);
+
+
+/**
+ * @brief  string型dp数据上传
+ * @param[in] {dpid} dpid号
+ * @param[in] {value} 当前dp值指针
+ * @param[in] {len} 数据长度
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_dp_string_update(unsigned short dpid,const unsigned char value[],unsigned short len);
+
+
+/**
+ * @brief  struct/arrary型dp数据上传
+ * @param[in] {dpid} dpid号
+ * @param[in] {value} 当前dp值指针
+ * @param[in] {len} 数据长度
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_dp_struct_update(mcu_dp_struct_t *st);
 
 #ifdef MCU_DP_UPLOAD_SYN
 /**
@@ -118,7 +163,7 @@ unsigned char mcu_dp_fault_update(unsigned char dpid,unsigned long value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update_syn(unsigned char dpid,unsigned char value);
+unsigned char mcu_dp_bool_update_syn(unsigned short dpid,unsigned char value);
 
 /**
  * @brief  value型dp数据同步上传
@@ -127,7 +172,7 @@ unsigned char mcu_dp_bool_update_syn(unsigned char dpid,unsigned char value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update_syn(unsigned char dpid,unsigned long value);
+unsigned char mcu_dp_value_update_syn(unsigned short dpid,unsigned long value);
 
 /**
  * @brief  fault型dp数据同步上传
@@ -136,7 +181,7 @@ unsigned char mcu_dp_value_update_syn(unsigned char dpid,unsigned long value);
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update_syn(unsigned char dpid,unsigned long value);
+unsigned char mcu_dp_fault_update_syn(unsigned short dpid,unsigned long value);
 #endif
 
 /**

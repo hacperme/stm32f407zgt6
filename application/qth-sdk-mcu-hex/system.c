@@ -145,7 +145,7 @@ static void product_info_update(void)
  * @param[in] {dpid} dpid
  * @return dp序号
  */
-static unsigned char get_dowmload_dpid_index(unsigned char dpid)
+static unsigned char get_dowmload_dpid_index(unsigned short dpid)
 {
     unsigned char index;
     unsigned char total = get_download_cmd_total();
@@ -166,15 +166,16 @@ static unsigned char get_dowmload_dpid_index(unsigned char dpid)
  */
 static unsigned char data_point_handle(const unsigned char value[])
 {
-    unsigned char dp_id,index;
+    unsigned short dp_id;
+    unsigned char index;
     unsigned char dp_type;
     unsigned char ret;
     unsigned short dp_len;
     
-    dp_id = value[0];
-    dp_type = value[1];
-    dp_len = value[2] * 0x100;
-    dp_len += value[3];
+    dp_id = (value[0] << 8) | value[1];
+    dp_type = value[2];
+    dp_len = value[3] * 0x100;
+    dp_len += value[4];
     
     index = get_dowmload_dpid_index(dp_id);
 
@@ -182,7 +183,7 @@ static unsigned char data_point_handle(const unsigned char value[])
         //错误提示
         return FALSE;
     }else {
-        ret = dp_download_handle(dp_id,value + 4,dp_len);
+        ret = dp_download_handle(dp_id,value + 5,dp_len);
     }
     
     return ret;
