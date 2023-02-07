@@ -75,7 +75,7 @@
    Info : J-Link OB-STM32F072-CortexM compiled Jan  7 2019 14:09:37
    Info : Hardware version: 1.00
    Info : VTarget = 3.300 V
-Info : clock speed 2000 kHz
+   Info : clock speed 2000 kHz
    Info : SWD DPIDR 0x2ba01477
    Info : stm32f4x.cpu: Cortex-M4 r0p1 processor detected
    Info : stm32f4x.cpu: target has 6 breakpoints, 4 watchpoints
