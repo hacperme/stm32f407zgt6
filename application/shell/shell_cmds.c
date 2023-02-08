@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "stm32f4xx_hal.h"
+#include "wifi.h"
 
 static void help_cmd(char argc, char *argv)
 {
@@ -161,7 +162,18 @@ static void test_cmd(char argc, char *argv)
    fault_test_by_div0();
 }
 
+static void wifi_status_cmd(char argc, char *argv)
+{
+   printf("call mcu_get_wifi_connect_status\r\n");
+   mcu_get_wifi_connect_status();
+}
 
+static void wifi_reset_cmd(char argc, char *argv)
+{
+   printf("call mcu_reset_wifi\r\n");
+   mcu_reset_wifi();
+   
+}
 
 
 const static_cmd_st static_cmd[] =
@@ -172,5 +184,7 @@ const static_cmd_st static_cmd[] =
    {"uptime", uptime_cmd, NULL},
    {"reboot", reboot_cmd, NULL},
    {"test", test_cmd, NULL},
+   {"wifistate", wifi_status_cmd, NULL},
+   {"wifireset", wifi_reset_cmd, NULL},
    {"\0",NULL}
 };
