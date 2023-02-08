@@ -2,6 +2,7 @@
 
 #include "wifi.h"
 
+
 extern const DOWNLOAD_CMD_S download_cmd[];
 
 
@@ -75,6 +76,50 @@ static void wifi_uart_write_data(unsigned char *in, unsigned short len)
     }
 }
 
+#if 0
+
+#define __is_print(ch) ((unsigned int)((ch) - ' ') < 127u - ' ')
+
+void dump_hex(const uint8_t *buf, uint32_t size, uint32_t number)
+{
+    int i, j;
+    char buffer[128] = {0};
+    int n = 0;
+
+    for (i = 0; i < size; i += number)
+    {
+        n += snprintf(buffer + n, sizeof(buffer) - n - 1, "%08X: ", i);
+
+        for (j = 0; j < number; j++)
+        {
+            if (j % 8 == 0)
+            {
+                n += snprintf(buffer + n, sizeof(buffer) - n - 1, " ");
+            }
+            if (i + j < size)
+                n += snprintf(buffer + n, sizeof(buffer) - n - 1, "%02X ", buf[i + j]);
+            else
+                n += snprintf(buffer + n, sizeof(buffer) - n - 1, "   ");
+        }
+        n += snprintf(buffer + n, sizeof(buffer) - n - 1, " ");
+
+        for (j = 0; j < number; j++)
+        {
+            if (i + j < size)
+            {
+                n += snprintf(buffer + n, sizeof(buffer) - n - 1, "%c", __is_print(buf[i + j]) ? buf[i + j] : '.');
+            }
+        }
+        n += snprintf(buffer + n, sizeof(buffer) - n - 1, "\n");
+        printf("%s", buffer);
+        n = 0;
+        memset(buffer, 0, sizeof(buffer));
+    }
+}
+
+#endif
+
+
 /**
  * @brief  向wifi串口发送一帧数据
  * @param[in] {fr_type} 帧类型
@@ -98,6 +143,10 @@ void wifi_uart_write_frame(unsigned char fr_type, unsigned char fr_ver, unsigned
     wifi_uart_tx_buf[len - 1] = check_sum;
     
     wifi_uart_write_data((unsigned char *)wifi_uart_tx_buf, len);
+    #if 0
+    dump_hex((const uint8_t *)wifi_uart_tx_buf, len, 8);
+    #endif
+    
 }
 
 /**
@@ -133,7 +182,7 @@ static void product_info_update(void)
     length = set_wifi_uart_buffer(length, (const unsigned char *)"{\"p\":\"", my_strlen((unsigned char *)"{\"p\":\""));
     length = set_wifi_uart_buffer(length,(unsigned char *)PK_PS,my_strlen((unsigned char *)PK_PS));
     length = set_wifi_uart_buffer(length, (const unsigned char *)"\",\"v\":\"", my_strlen((unsigned char *)"\",\"v\":\""));
-    length = set_wifi_uart_buffer(length,(unsigned char *)MCU_VER,my_strlen((unsigned char *)MCU_VER));
+    length = set_wifi_uart_buffer(length,(unsigned char *)MCU_VER"\"",my_strlen((unsigned char *)MCU_VER"\""));
   
     length = set_wifi_uart_buffer(length, (const unsigned char *)"}", my_strlen((unsigned char *)"}"));
     
@@ -220,6 +269,8 @@ void data_handle(unsigned short offset)
 #ifdef WIFI_TEST_ENABLE
     unsigned char rssi;
 #endif
+
+    printf("cmd_type:0x%0X\r\n",cmd_type );
 
     switch(cmd_type)
     {
