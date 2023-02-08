@@ -25,10 +25,13 @@
 // #error "请将功能点ID与类型的匹配关系和平台上设置的保持一致,并删除该行"
 const DOWNLOAD_CMD_S download_cmd[] =
 {
+//   {DPID_TEST_RAW, DP_TYPE_RAW},
   {DPID_TEST_BOOL, DP_TYPE_BOOL},
   {DPID_TEST_VALUE, DP_TYPE_VALUE},
   {DPID_TEST_FAULT,DP_TYPE_BITMAP},
   {DPID_TEST_STRUCT,DP_TYPE_STRUCT},
+  {DPID_TEST_STRING,DP_TYPE_STRING},
+  {DPID_TEST_DOUBLE,DP_TYPE_DOUBLE},
 };
 
 
@@ -88,7 +91,9 @@ void all_data_update(void)
     //请按照实际数据修改每个可下发可上报函数和只上报函数
     mcu_dp_bool_update(DPID_TEST_BOOL,0); //BOOL型数据上报;
     mcu_dp_value_update(DPID_TEST_VALUE,12); //VALUE型数据上报;
-    mcu_dp_fault_update(DPID_TEST_FAULT,0);//故障型数据上报;
+    mcu_dp_fault_update(DPID_TEST_FAULT, 0x03);//故障型数据上报;
+    mcu_dp_string_update(DPID_TEST_STRING, (const unsigned char *)"test_string", strlen("test_string")); //STRING型数据上报;
+    mcu_dp_double_update(DPID_TEST_DOUBLE, 12.34); //DOUBLE型数据上报;
 
     mcu_dp_struct_t st = {0};
     unsigned char buf[200] = {0};
@@ -97,6 +102,10 @@ void all_data_update(void)
     mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_VALUE, &st, DP_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value));
     unsigned char test_bool = 1;
     mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_BOOL, &st, DP_TYPE_BOOL, &test_bool, sizeof(test_bool));
+    unsigned char test_string[] = "substring";
+    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_STRING, &st, DP_TYPE_STRING, test_string, strlen((const char *)test_string));
+    double test_double = 22.34;
+    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_DOUBLE, &st, DP_TYPE_DOUBLE, (unsigned char *)&test_double, sizeof(test_double));
     mcu_dp_struct_update(&st); //结构体型数据上报;
 
 }
@@ -455,7 +464,8 @@ void get_upload_syn_result(unsigned char result)
 void get_wifi_status(unsigned char result)
 {
 //   #error "请自行完成获取 WIFI 状态结果代码,并删除该行"
- 
+    printf("result:%d\r\n", result);
+
     switch(result) {
         case 0:
             //wifi工作状态1

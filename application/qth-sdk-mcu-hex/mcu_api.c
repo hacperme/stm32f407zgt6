@@ -178,6 +178,35 @@ unsigned long byte_to_int(const unsigned char value[4])
 }
 
 /**
+ * @brief  raw型dp数据上传
+ * @param[in] {dpid} dpid号
+ * @param[in] {value} 当前dp值指针
+ * @param[in] {len} 数据长度
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_dp_raw_update(unsigned short dpid,const unsigned char value[],unsigned short len)
+{
+    unsigned short send_len = 0;
+    
+    if(stop_update_flag == ENABLE)
+        return SUCCESS;
+    //
+    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
+    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
+    send_len = set_wifi_uart_byte(send_len, DP_TYPE_RAW);
+    //
+    send_len = set_wifi_uart_byte(send_len,len / 0x100);
+    send_len = set_wifi_uart_byte(send_len,len % 0x100);
+    //
+    send_len = set_wifi_uart_buffer(send_len,(unsigned char *)value, len);
+    
+    wifi_uart_write_frame(STATE_UPLOAD_CMD,MCU_TX_VER,send_len);
+
+    return SUCCESS;
+}
+
+/**
  * @brief  bool型dp数据上传
  * @param[in] {dpid} dpid号
  * @param[in] {value} 当前dp值
@@ -247,7 +276,7 @@ unsigned char mcu_dp_value_update(unsigned short dpid, unsigned long value)
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update(unsigned short dpid,unsigned long value)
+unsigned char mcu_dp_fault_update(unsigned short dpid, unsigned long value)
 {
     unsigned short send_len = 0;
      
@@ -306,6 +335,42 @@ unsigned char mcu_dp_string_update(unsigned short dpid, const unsigned char valu
     
     wifi_uart_write_frame(STATE_UPLOAD_CMD,MCU_TX_VER,send_len);
     
+    return SUCCESS;
+}
+
+/**
+ * @brief  fault型dp数据上传
+ * @param[in] {dpid} dpid号
+ * @param[in] {value} 当前dp值
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_dp_double_update(unsigned short dpid, double value)
+{
+    unsigned short send_len = 0;
+    unsigned char *p = (unsigned char *)&value;
+
+    if (stop_update_flag == ENABLE)
+        return SUCCESS;
+
+    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
+    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
+    send_len = set_wifi_uart_byte(send_len, DP_TYPE_DOUBLE);
+    //
+    send_len = set_wifi_uart_byte(send_len, 0);
+    send_len = set_wifi_uart_byte(send_len, 8);
+    //
+    send_len = set_wifi_uart_byte(send_len, p[7]);
+    send_len = set_wifi_uart_byte(send_len, p[6]);
+    send_len = set_wifi_uart_byte(send_len, p[5]);
+    send_len = set_wifi_uart_byte(send_len, p[4]);
+    send_len = set_wifi_uart_byte(send_len, p[3]);
+    send_len = set_wifi_uart_byte(send_len, p[2]);
+    send_len = set_wifi_uart_byte(send_len, p[1]);
+    send_len = set_wifi_uart_byte(send_len, p[0]);
+   
+    wifi_uart_write_frame(STATE_UPLOAD_CMD, MCU_TX_VER, send_len);
+
     return SUCCESS;
 }
 
@@ -430,28 +495,27 @@ int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned ch
         st->buffer[4] = st->value_len % 0x100;
 
         break;
-    case DP_TYPE_BITMAP:
+    case DP_TYPE_DOUBLE:
         st->buffer[st->offset++] = (dpid >> 8);
         st->buffer[st->offset++] = (dpid & 0xff);
-        st->buffer[st->offset++] = DP_TYPE_BITMAP;
+        st->buffer[st->offset++] = DP_TYPE_DOUBLE;
         // length
-        st->buffer[st->offset++] = len / 0x100;
-        st->buffer[st->offset++] = len % 0x100;
-        my_memcpy(&st->buffer[st->offset], value, len);
-        st->offset += len;
+        st->buffer[st->offset++] = 0;
+        st->buffer[st->offset++] = 8;
+        st->buffer[st->offset++] = value[7];
+        st->buffer[st->offset++] = value[6];
+        st->buffer[st->offset++] = value[5];
+        st->buffer[st->offset++] = value[4];
+        st->buffer[st->offset++] = value[3];
+        st->buffer[st->offset++] = value[2];
+        st->buffer[st->offset++] = value[1];
+        st->buffer[st->offset++] = value[0];
 
         // 更新总长度
         st->value_len+=len+5;
         st->buffer[3] = st->value_len / 0x100;
         st->buffer[4] = st->value_len % 0x100;
 
-        break;
-    case DP_TYPE_DOUBLE:
-        // todo
-        break;
-
-    case DP_TYPE_STRUCT:
-        // 不嵌套增加结构体
         break;
     default:
         break;
@@ -600,7 +664,28 @@ unsigned char mcu_dp_fault_update_syn(unsigned short dpid,unsigned long value)
 
     return SUCCESS;
 }
-// #endif
+
+
+/**
+ * @brief  mcu获取raw型下发dp值
+ * @param[in] {value} dp数据缓冲区地址
+ * @param[in] {len} dp数据长度
+ * @param[out] {value} raw 数据缓冲区地址
+ * @param[out] {out_len} raw 数据长度
+ * @return 当前dp值
+ * @note   Null
+ */
+unsigned char mcu_get_dp_download_raw(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len)
+{
+    unsigned short i;
+    
+    *out_len = len;
+    for(i=0;i<len;i++) {
+        out[i] = value[i];
+    }
+    
+    return SUCCESS;
+}
 
 /**
  * @brief  mcu获取bool型下发dp值
@@ -623,6 +708,81 @@ unsigned char mcu_get_dp_download_bool(const unsigned char value[],unsigned shor
 unsigned long mcu_get_dp_download_value(const unsigned char value[],unsigned short len)
 {
     return(byte_to_int(value));
+}
+
+/**
+ * @brief  mcu获取string型下发dp值
+ * @param[in] {value} dp数据缓冲区地址
+ * @param[in] {len} dp数据长度
+ * @param[out] {value} string 数据缓冲区地址
+ * @param[out] {out_len} string 数据长度
+ * @return 当前dp值
+ * @note   Null
+ */
+unsigned char mcu_get_dp_download_string(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len)
+{
+    unsigned short i;
+    
+    *out_len = len;
+    for(i=0;i<len;i++) {
+        out[i] = value[i];
+    }
+    
+    return SUCCESS;
+}
+
+/**
+ * @brief  mcu获取fault型下发dp值
+ * @param[in] {value} dp数据缓冲区地址
+ * @param[in] {len} dp数据长度
+ * @return 当前dp值
+ * @note   Null
+ */
+unsigned long mcu_get_dp_download_fault(const unsigned char value[],unsigned short len)
+{
+    unsigned long temp = 0;
+
+    if (len == 1)
+    {
+        temp = value[0];
+    }
+    else if (len == 2)
+    {
+        temp = value[0] << 8;
+        temp |= value[1];
+    }
+    else
+    {
+        temp = value[0] << 24;
+        temp |= value[1] << 16;
+        temp |= value[2] << 8;
+        temp |= value[3];
+    }
+
+    return temp;
+}
+
+/**
+ * @brief  mcu获取double型下发dp值
+ * @param[in] {value} dp数据缓冲区地址
+ * @param[in] {len} dp数据长度
+ * @return 当前dp值
+ * @note   Null
+ */
+double mcu_get_dp_download_double(const unsigned char value[], unsigned short len)
+{
+    double temp = 0;
+    unsigned char *p = (unsigned char *)&temp;
+    p[0] = value[7];
+    p[1] = value[6];
+    p[2] = value[5];
+    p[3] = value[4];
+    p[4] = value[3];
+    p[5] = value[2];
+    p[6] = value[1];
+    p[7] = value[0];
+
+    return temp;
 }
 
 /**
@@ -720,6 +880,11 @@ void wifi_uart_service(void)
             offset += 3;
             continue;
         }
+        
+        extern void dump_hex(const uint8_t *buf, uint32_t size, uint32_t number);
+        printf("<<:\r\n");
+        dump_hex((const uint8_t *)wifi_data_process_buf + offset, rx_value_len, 8);
+        printf("\r\n");
         
         data_handle(offset);
         offset += rx_value_len;

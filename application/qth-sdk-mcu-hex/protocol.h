@@ -8,7 +8,7 @@
 /******************************************************************************
                        1:修改产品信息
 ******************************************************************************/
-#define PK_PS "p1***e_Qkh*********bUpZ"    //在开发者中心创建产品生成的生成的产品唯一标识和对应的密钥，两者通过下划线连接
+#define PK_PS "p11nUJ_MGo3dldUT3NQcC8w"    //在开发者中心创建产品生成的生成的产品唯一标识和对应的密钥，两者通过下划线连接
 
 #define MCU_VER "1.0.0"         //用户的软件版本,用于MCU固件升级,MCU升级版本需修改
 
@@ -35,7 +35,7 @@ MCU可调用mcu_api.c文件内的mcu_firm_update_query()函数获取当前MCU固
 ******************************************************************************/
 #ifndef SUPPORT_MCU_FIRM_UPDATE
 #define WIFI_UART_RECV_BUF_LMT          16              //串口数据接收缓存区大小,如MCU的RAM不够,可缩小
-#define WIFI_DATA_PROCESS_LMT           24              //串口数据处理缓存区大小,根据用户DP数据大小量定,必须大于24
+#define WIFI_DATA_PROCESS_LMT           1024              //串口数据处理缓存区大小,根据用户DP数据大小量定,必须大于24
 #else
 #define WIFI_UART_RECV_BUF_LMT          128             //串口数据接收缓存区大小,如MCU的RAM不够,可缩小
 
@@ -46,7 +46,7 @@ MCU可调用mcu_api.c文件内的mcu_firm_update_query()函数获取当前MCU固
 
 #endif
 
-#define WIFIR_UART_SEND_BUF_LMT         48              //根据用户需要发送的物模型数据大小量定,必须大于48
+#define WIFIR_UART_SEND_BUF_LMT         1024              //根据用户需要发送的物模型数据大小量定,必须大于48
 
 
 /******************************************************************************
@@ -108,6 +108,11 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
                         此处数据请和移远平台创建的功能点一致      
 ******************************************************************************/
 // #error "请将功能点ID与平台上设置的保持一致,并删除该行"
+
+//RAW类型物模型
+//备注:
+// #define DPID_TEST_RAW 4
+
 //BOOL类型物模型
 //备注:
 #define DPID_TEST_BOOL 1
@@ -116,16 +121,26 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
 //备注：
 #define DPID_TEST_VALUE 3
 
+//STRING 类型物模型
+//备注:
+#define DPID_TEST_STRING 5
 
 //FAULT类型(特殊结构的物模型)
 //备注:
 #define DPID_TEST_FAULT 6
 
-#define DPID_TEST_STRUCT 7
+//DOUBLE 类型物模型
+//备注:
+#define DPID_TEST_DOUBLE 7
+
+#define DPID_TEST_STRUCT 2
 
 #if defined(DPID_TEST_STRUCT)
-#define DPID_TEST_STRUCT_SUB_VALUE 0
+// #define DPID_TEST_STRUCT_SUB_RAW 5
 #define DPID_TEST_STRUCT_SUB_BOOL 1
+#define DPID_TEST_STRUCT_SUB_VALUE 2
+#define DPID_TEST_STRUCT_SUB_DOUBLE 3
+#define DPID_TEST_STRUCT_SUB_STRING 4
 #endif
 
 /**

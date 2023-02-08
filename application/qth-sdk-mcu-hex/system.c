@@ -76,7 +76,7 @@ static void wifi_uart_write_data(unsigned char *in, unsigned short len)
     }
 }
 
-#if 0
+#if 1
 
 #define __is_print(ch) ((unsigned int)((ch) - ' ') < 127u - ' ')
 
@@ -143,8 +143,10 @@ void wifi_uart_write_frame(unsigned char fr_type, unsigned char fr_ver, unsigned
     wifi_uart_tx_buf[len - 1] = check_sum;
     
     wifi_uart_write_data((unsigned char *)wifi_uart_tx_buf, len);
-    #if 0
+    #if 1
+    printf(">>:\r\n");
     dump_hex((const uint8_t *)wifi_uart_tx_buf, len, 8);
+    printf("\r\n");
     #endif
     
 }

@@ -17,18 +17,6 @@ typedef struct
   unsigned short offset;
 }mcu_dp_struct_t;
 
-/**
- * @brief  struct/arrary型dp数据点初始化
- * @param[in] {void} 无
- * @return 无
- */
-int mcu_dp_struct_init(unsigned short dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
-
-int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
-
-int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
-
-int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned short *dpid, unsigned char *type, unsigned char *value, unsigned short *len);
 
 
 /**
@@ -99,6 +87,16 @@ void int_to_byte(unsigned long number,unsigned char value[4]);
 unsigned long byte_to_int(const unsigned char value[4]);
 
 /**
+ * @brief  raw型dp数据上传
+ * @param[in] {dpid} dpid号
+ * @param[in] {value} 当前dp值指针
+ * @param[in] {len} 数据长度
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_dp_raw_update(unsigned short dpid,const unsigned char value[],unsigned short len);
+
+/**
  * @brief  bool型dp数据上传
  * @param[in] {dpid} dpid号
  * @param[in] {value} 当前dp值
@@ -144,6 +142,23 @@ unsigned char mcu_dp_fault_update(unsigned short dpid,unsigned long value);
  */
 unsigned char mcu_dp_string_update(unsigned short dpid,const unsigned char value[],unsigned short len);
 
+/**
+ * @brief  double型dp数据上传
+ * @param[in] {dpid} dpid号
+ * @param[in] {value} 当前dp值
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_dp_double_update(unsigned short dpid, double value);
+
+/**
+ * @brief  struct/arrary型dp数据点初始化
+ * @param[in] {void} 无
+ * @return 无
+ */
+int mcu_dp_struct_init(unsigned short dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
+
+int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
 
 /**
  * @brief  struct/arrary型dp数据上传
@@ -185,6 +200,17 @@ unsigned char mcu_dp_fault_update_syn(unsigned short dpid,unsigned long value);
 #endif
 
 /**
+ * @brief  mcu获取raw型下发dp值
+ * @param[in] {value} dp数据缓冲区地址
+ * @param[in] {len} dp数据长度
+ * @param[out] {value} raw 数据缓冲区地址
+ * @param[out] {out_len} raw 数据长度
+ * @return 当前dp值
+ * @note   Null
+ */
+unsigned char mcu_get_dp_download_raw(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len);
+
+/**
  * @brief  mcu获取bool型下发dp值
  * @param[in] {value} dp数据缓冲区地址
  * @param[in] {len} dp数据长度
@@ -200,6 +226,39 @@ unsigned char mcu_get_dp_download_bool(const unsigned char value[],unsigned shor
  * @note   Null
  */
 unsigned long mcu_get_dp_download_value(const unsigned char value[],unsigned short len);
+
+/**
+ * @brief  mcu获取string型下发dp值
+ * @param[in] {value} dp数据缓冲区地址
+ * @param[in] {len} dp数据长度
+ * @param[out] {value} string 数据缓冲区地址
+ * @param[out] {out_len} string 数据长度
+ * @return 当前dp值
+ * @note   Null
+ */
+unsigned char mcu_get_dp_download_string(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len);
+
+/**
+ * @brief  mcu获取fault型下发dp值
+ * @param[in] {value} dp数据缓冲区地址
+ * @param[in] {len} dp数据长度
+ * @return 当前dp值
+ * @note   Null
+ */
+unsigned long mcu_get_dp_download_fault(const unsigned char value[],unsigned short len);
+
+/**
+ * @brief  mcu获取double型下发dp值
+ * @param[in] {value} dp数据缓冲区地址
+ * @param[in] {len} dp数据长度
+ * @return 当前dp值
+ * @note   Null
+ */
+double mcu_get_dp_download_double(const unsigned char value[],unsigned short len);
+
+int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
+
+int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned short *dpid, unsigned char *type, unsigned char *value, unsigned short *len);
 
 /**
  * @brief  串口接收数据暂存处理
