@@ -134,8 +134,9 @@ static unsigned char dp_download_test_bool_handle(const unsigned char value[], u
     bool_value = mcu_get_dp_download_bool(value,length);
     if(bool_value == 0) {
         //bool off
+        printf("set off\r\n");
     }else {
-        //bool on
+        printf("set on\r\n");
     }
   
     //There should be a report after processing the DP
@@ -165,6 +166,8 @@ static unsigned char dp_download_test_value_handle(const unsigned char value[], 
     //VALUE type data processing
     
     */
+
+    printf("set int_value:%ld\r\n", int_value);
     
     //There should be a report after processing the DP
     ret = mcu_dp_value_update(DPID_TEST_VALUE,int_value);
@@ -173,6 +176,92 @@ static unsigned char dp_download_test_value_handle(const unsigned char value[], 
     else
         return ERROR;
 }
+
+/*****************************************************************************
+函数名称 : dp_download_test_string_handle
+功能描述 : 针对DPID_TEST_STRING的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char dp_download_test_string_handle(const unsigned char value[], unsigned short length)
+{
+    //示例:当前DP类型为STRING
+    unsigned char ret = SUCCESS;
+    unsigned char string_value[100] = {0};
+    unsigned short string_len = 0;
+    
+    mcu_get_dp_download_string(value,length,string_value, &string_len);
+
+
+    printf("set string_value:%s\r\n", string_value);
+    
+    //There should be a report after processing the DP
+    ret = mcu_dp_string_update(DPID_TEST_STRING,string_value,strlen((const char *)string_value));
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
+/*****************************************************************************
+函数名称 : dp_download_test_fault_handle
+功能描述 : 针对DPID_TEST_FAULT的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char dp_download_test_fault_handle(const unsigned char value[], unsigned short length)
+{
+    //示例:当前DP类型为ENUM
+    unsigned char ret = SUCCESS;
+    unsigned long enum_value;
+    
+    enum_value = mcu_get_dp_download_fault(value,length);
+
+    
+    printf("set fault_value:0x%0ld\r\n", enum_value);
+    
+    //There should be a report after processing the DP
+    ret = mcu_dp_fault_update(DPID_TEST_FAULT,enum_value);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
+/*****************************************************************************
+函数名称 : dp_download_test_double_handle
+功能描述 : 针对DPID_TEST_DOUBLE的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char dp_download_test_double_handle(const unsigned char value[], unsigned short length)
+{
+    //示例:当前DP类型为DOUBLE
+    unsigned char ret = SUCCESS;
+    double double_value;
+    
+    double_value = mcu_get_dp_download_double(value,length);
+
+    
+    printf("set double_value:%f\r\n", double_value);
+    
+    //There should be a report after processing the DP
+    ret = mcu_dp_double_update(DPID_TEST_DOUBLE,double_value);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
 
 /*****************************************************************************
 函数名称 : dp_download_test_struct_handle
@@ -193,6 +282,16 @@ static unsigned char dp_download_test_struct_handle(const unsigned char value[],
     unsigned char dp_value[100] = {0};
     unsigned short dp_length = 0;
 
+    unsigned long int_value;
+    unsigned char bool_value;
+    double double_value;
+    unsigned char string_value[100] = {0};
+    unsigned short string_len = 0;
+
+    mcu_dp_struct_t st_send = {0};
+    unsigned char buf[200] = {0};
+    mcu_dp_struct_init(DPID_TEST_STRUCT, &st_send, buf, sizeof(buf));
+
     mcu_dp_struct_parser(&st, (unsigned char *)value, length);
 
     while (mcu_dp_struct_get_item(&st, &dpid, &dp_type, dp_value, &dp_length))
@@ -201,43 +300,54 @@ static unsigned char dp_download_test_struct_handle(const unsigned char value[],
         {
         case DPID_TEST_STRUCT_SUB_VALUE:
         {
-            unsigned long int_value;
 
             int_value = mcu_get_dp_download_value(dp_value, dp_length);
-            if (int_value == 0)
-            {
-                
-            }
-            else
-            {
- 
-            }
-
-            // todo: value data processing
+            printf("set sub int_value:%ld\r\n", int_value);
+            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_VALUE, &st_send, DP_TYPE_VALUE, (unsigned char *)&int_value, sizeof(int_value));
         }
         break;
         case DPID_TEST_STRUCT_SUB_BOOL:
         {
-            unsigned char bool_value;
 
             bool_value = mcu_get_dp_download_bool(value, length);
             if (bool_value == 0)
             {
-                // bool off
+                printf("set sub bool off\r\n");
             }
             else
             {
-                // bool on
+                printf("set sub bool on\r\n");
             }
+            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_BOOL, &st_send, DP_TYPE_BOOL, (unsigned char *)&bool_value, sizeof(bool_value));
         }
         break;
 
+        case DPID_TEST_STRUCT_SUB_DOUBLE:
+        {
+
+            double_value = mcu_get_dp_download_double(dp_value, dp_length);
+
+            printf("set sub double_value:%f\r\n", double_value);
+            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_DOUBLE, &st_send, DP_TYPE_DOUBLE, (unsigned char *)&double_value, sizeof(double_value));
+        }
+        break;
+        case DPID_TEST_STRUCT_SUB_STRING:
+        {
+
+            mcu_get_dp_download_string(dp_value, dp_length, string_value, &string_len);
+
+            printf("set string_value:%s\r\n", string_value);
+            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_STRING, &st_send, DP_TYPE_STRING, (unsigned char *)&string_value, strlen((const char *)string_value));
+            break;
+        }
         default:
             break;
         }
     }
 
     // There should be a report after processing the DP
+
+    mcu_dp_struct_update(&st_send); //结构体型数据上报;
 
     if (ret == SUCCESS)
         return SUCCESS;
@@ -269,6 +379,12 @@ unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[]
     ***********************************/
     unsigned char ret = SUCCESS;
     switch(dpid) {
+        #if 0
+        case DPID_TEST_RAW :
+            //测试RAW类型数据处理函数
+            ret = dp_download_test_raw_handle(value,length);
+        break;
+        #endif
         case DPID_TEST_BOOL:
             //测试BOOL类型数据处理函数
             ret = dp_download_test_bool_handle(value,length);
@@ -276,6 +392,18 @@ unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[]
         case DPID_TEST_VALUE:
             //测试VALUE类型数据处理函数
             ret = dp_download_test_value_handle(value,length);
+        break;
+        case DPID_TEST_STRING:
+            //测试STRING类型数据处理函数
+            ret = dp_download_test_string_handle(value,length);
+        break;
+        case DPID_TEST_FAULT: 
+            //测试FAULT类型数据处理函数
+            ret = dp_download_test_fault_handle(value,length);
+        break;
+        case DPID_TEST_DOUBLE:
+            //测试DOUBLE类型数据处理函数
+            ret = dp_download_test_double_handle(value,length);
         break;
         case DPID_TEST_STRUCT:
             //测试STRUCT类型数据处理函数
