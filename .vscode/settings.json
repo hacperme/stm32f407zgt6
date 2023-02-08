@@ -1,4 +1,9 @@
 {
     "makefile.extensionOutputFolder": "./.vscode",
-    "cortex-debug.armToolchainPath": "${workspaceRoot}/tools/gcc_arm_none_eabi/bin"
+    "cortex-debug.armToolchainPath": "${workspaceRoot}/tools/gcc_arm_none_eabi/bin",
+    "files.associations": {
+        "string.h": "c",
+        "mcu_api.h": "c",
+        "system.h": "c"
+    }
 }

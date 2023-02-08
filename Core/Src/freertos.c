@@ -29,6 +29,8 @@
 
 #include "usart.h"
 #include "nr_micro_shell.h"
+#include "wifi.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,6 +51,9 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 TaskHandle_t uart1_task = NULL;
+uint8_t uart1_rx = 0;
+uint8_t uart2_rx = 0;
+
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -153,42 +158,36 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
+  
   for (;;)
   {
+    
     osDelay(200);
-    break;
+     break;
+
   }
   osThreadExit();
   /* USER CODE END StartDefaultTask */
 }
 
+
+
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 static void uart1_task_entry(void *arg)
 {
-  uint8_t c = 0;
-  HAL_StatusTypeDef ret;
+  wifi_protocol_init();
+  HAL_UART_Receive_IT(&huart1, &uart1_rx, 1);
+  HAL_UART_Receive_IT(&huart2, &uart2_rx, 1);
   while (1)
   {
-    ret = HAL_UART_Receive(&huart1, &c, 1, 0xFFFF);
-    if(ret == HAL_OK)
-    {
-      shell(c);
-      HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-    }
-    // else
-    // {
-    //   vTaskDelay(200);
-    //   HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-    // }
 
+    wifi_uart_service();
+    osDelay(200);
   }
   uart1_task = NULL;
   vTaskDelete(NULL);
 }
-
-
-
 
 int _write(int fd, char *ptr, int len)  
 {  
@@ -196,6 +195,27 @@ int _write(int fd, char *ptr, int len)
   return len;
 }
 
+int _write2(int fd, char *ptr, int len)  
+{  
+  HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, 0xFFFF);
+  return len;
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+  if (huart->Instance == USART1)
+  {
+
+    shell(uart1_rx);
+    HAL_UART_Receive_IT(&huart1, &uart1_rx, 1);
+  }
+  else if (huart->Instance == USART2)
+  {
+    uart_receive_input(uart2_rx);
+    HAL_UART_Receive_IT(&huart2, &uart2_rx, 1);
+  }
+}
 
 /* USER CODE END Application */
 

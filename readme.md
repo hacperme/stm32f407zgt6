@@ -71,9 +71,25 @@
    libusb1 09e75e98b4d9ea7909e8837b7a3f00dda4589dc3
    For bug reports, read
            http://openocd.org/doc/doxygen/bugs.html
-   Error: No J-Link device found
-   Error: No Valid JTAG Interface Configured.
-   PS D:\workspace\stm32f407zgt6\stm32f407zgt6>
+   Warn : Failed to open device: LIBUSB_ERROR_NOT_SUPPORTED.
+   Info : J-Link OB-STM32F072-CortexM compiled Jan  7 2019 14:09:37
+   Info : Hardware version: 1.00
+   Info : VTarget = 3.300 V
+   Info : clock speed 2000 kHz
+   Info : SWD DPIDR 0x2ba01477
+   Info : stm32f4x.cpu: Cortex-M4 r0p1 processor detected
+   Info : stm32f4x.cpu: target has 6 breakpoints, 4 watchpoints
+   Info : starting gdb server for stm32f4x.cpu on 3333
+   Info : Listening on port 3333 for gdb connections
+   target halted due to debug-request, current mode: Thread 
+   xPSR: 0x01000000 pc: 0x08004d14 msp: 0x2001a7e8
+   Info : Reduced speed from 8000 kHz to 2000 kHz (maximum)
+   ** Programming Started **
+   Info : device id = 0x10076413
+   Info : flash size = 1024 kbytes
+   ** Programming Finished **
+   ** Resetting Target **
+   shutdown command invoked
    ```
-
+   
    
