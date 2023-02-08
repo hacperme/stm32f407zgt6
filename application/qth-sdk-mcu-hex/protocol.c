@@ -47,9 +47,9 @@ void uart_transmit_output(unsigned char value)
 {
     // #error "请将MCU串口发送函数填入该函数,并删除该行"
 
-    extern int _write(int fd, char *ptr, int len) ;
+    extern int _write2(int fd, char *ptr, int len) ;
 
-    _write(1, (char *)&value, 1);
+    _write2(1, (char *)&value, 1);
     
 /*
     //Example:
