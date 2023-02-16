@@ -600,23 +600,19 @@ void get_wifi_status(unsigned char result)
 
     switch(result) {
         case 0:
-            //wifi工作状态1
+            // wifi状态 1 Wi-Fi 配网状态（蓝牙处于配网状态）
         break;
-    
-        case 1:
-            //wifi工作状态2
-        break;
-        
+
         case 2:
-            //wifi工作状态3
+            // wifi状态 3 WIFI 已配置但未连上路由器
         break;
         
         case 3:
-            //wifi工作状态4
+            // wifi状态 4 WIFI 已配置且连上路由器
         break;
         
         case 4:
-            //wifi工作状态5
+            // wifi状态 5 已连上路由器且连接到云端
         break;
         
         case 5:
