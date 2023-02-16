@@ -87,27 +87,31 @@ void uart_transmit_output(unsigned char value)
 void all_data_update(void)
 {
     // #error "请在此处理可下发可上报数据及只上报数据示例,处理完成后删除该行"
-    
-    //请按照实际数据修改每个可下发可上报函数和只上报函数
-    mcu_tsl_bool_update(TSLID_TEST_BOOL,0); //BOOL型数据上报;
-    mcu_tsl_value_update(TSLID_TEST_VALUE,12); //VALUE型数据上报;
-    mcu_tsl_fault_update(TSLID_TEST_FAULT, 0x03);//故障型数据上报;
-    mcu_tsl_string_update(TSLID_TEST_STRING, (const unsigned char *)"test_string", strlen("test_string")); //STRING型数据上报;
-    mcu_tsl_double_update(TSLID_TEST_DOUBLE, 12.34); //DOUBLE型数据上报;
 
     mcu_tsl_struct_t st = {0};
     unsigned char buf[200] = {0};
-    mcu_tsl_struct_init(TSLID_TEST_STRUCT, &st, buf, sizeof(buf));
     int test_value = 123;
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_VALUE, &st, TSL_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value));
     unsigned char test_bool = 1;
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_BOOL, &st, TSL_TYPE_BOOL, &test_bool, sizeof(test_bool));
     unsigned char test_string[] = "substring";
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st, TSL_TYPE_STRING, test_string, strlen((const char *)test_string));
     double test_double = 22.34;
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_DOUBLE, &st, TSL_TYPE_DOUBLE, (unsigned char *)&test_double, sizeof(test_double));
-    mcu_tsl_struct_update(&st); //结构体型数据上报;
 
+    // 请按照实际数据修改每个可下发可上报函数和只上报函数
+    mcu_tsl_bool_update(TSLID_TEST_BOOL, 0);                                                               // BOOL型数据上报;
+    mcu_tsl_value_update(TSLID_TEST_VALUE, 12);                                                            // VALUE型数据上报;
+    mcu_tsl_fault_update(TSLID_TEST_FAULT, 0x03);                                                          // 故障型数据上报;
+    mcu_tsl_string_update(TSLID_TEST_STRING, (const unsigned char *)"test_string", strlen("test_string")); // STRING型数据上报;
+    mcu_tsl_double_update(TSLID_TEST_DOUBLE, 12.34);                                                       // DOUBLE型数据上报;
+
+    mcu_tsl_struct_init(TSLID_TEST_STRUCT, &st, buf, sizeof(buf));
+
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_VALUE, &st, TSL_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value));
+
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_BOOL, &st, TSL_TYPE_BOOL, &test_bool, sizeof(test_bool));
+
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st, TSL_TYPE_STRING, test_string, strlen((const char *)test_string));
+
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_DOUBLE, &st, TSL_TYPE_DOUBLE, (unsigned char *)&test_double, sizeof(test_double));
+    mcu_tsl_struct_update(&st); // 结构体型数据上报;
 }
 
 
