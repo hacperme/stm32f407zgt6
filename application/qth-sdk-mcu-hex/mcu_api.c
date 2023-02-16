@@ -539,24 +539,28 @@ int mcu_tsl_struct_parser(mcu_tsl_struct_t *st, unsigned char *buffer, unsigned 
 
 int mcu_tsl_struct_get_item(mcu_tsl_struct_t *st, unsigned short *tslid, unsigned char *type, unsigned char *value, unsigned short *len)
 {
-    unsigned short offset = 0;
+
     unsigned short value_len = 0;
     
     if (st == NULL || tslid == NULL || type == NULL || value == NULL || len == NULL)
         return ERROR;
-    if ((st->offset+5) > st->buffer_len)
+    if ((st->offset) >= st->buffer_len)
         return ERROR;
 
     *tslid = (st->buffer[st->offset] << 8) | st->buffer[st->offset+1];
+
     st->offset += 2;
     *type = st->buffer[st->offset++];
+  
     value_len = (st->buffer[st->offset] << 8) | st->buffer[st->offset+1];
+   
     st->offset += 2;
     *len = value_len;
 
-    offset = st->offset + 5;
+ 
 
-    my_memcpy(value, &st->buffer[offset], value_len);
+    my_memcpy(value, &st->buffer[st->offset], value_len);
+ 
     st->offset += value_len;
 
     return SUCCESS;
@@ -852,7 +856,7 @@ void wifi_uart_service(void)
         }
         
         extern void dump_hex(const uint8_t *buf, uint32_t size, uint32_t number);
-        printf("<<:\r\n");
+        printf("R:\r\n");
         dump_hex((const uint8_t *)wifi_data_process_buf + offset, rx_value_len, 8);
         printf("\r\n");
         

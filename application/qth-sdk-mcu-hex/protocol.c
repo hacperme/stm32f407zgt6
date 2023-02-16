@@ -290,7 +290,7 @@ static unsigned char tsl_download_test_struct_handle(const unsigned char value[]
         case TSLID_TEST_STRUCT_SUB_BOOL:
         {
 
-            bool_value = mcu_get_tsl_download_bool(value, length);
+            bool_value = mcu_get_tsl_download_bool(tsl_value, tsl_length);
             if (bool_value == 0)
             {
                 printf("set sub bool off\r\n");
@@ -318,7 +318,7 @@ static unsigned char tsl_download_test_struct_handle(const unsigned char value[]
             mcu_get_tsl_download_string(tsl_value, tsl_length, string_value, &string_len);
 
             printf("set string_value:%s\r\n", string_value);
-            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st_send, TSL_TYPE_STRING, (unsigned char *)&string_value, strlen((const char *)string_value));
+            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st_send, TSL_TYPE_STRING, (unsigned char *)string_value, strlen((const char *)string_value));
             break;
         }
         default:
