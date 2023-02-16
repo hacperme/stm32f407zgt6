@@ -102,15 +102,15 @@ void all_data_update(void)
     mcu_tsl_string_update(TSLID_TEST_STRING, (const unsigned char *)"test_string", strlen("test_string")); // STRING型数据上报;
     mcu_tsl_double_update(TSLID_TEST_DOUBLE, 12.34);                                                       // DOUBLE型数据上报;
 
-    mcu_tsl_struct_init(TSLID_TEST_STRUCT, &st, buf, sizeof(buf));
+    mcu_tsl_struct_init(TSLID_TEST_STRUCT, &st, buf, sizeof(buf));  // 初始化STRUCT类型
 
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_VALUE, &st, TSL_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value));
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_VALUE, &st, TSL_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value)); //添加结构体成员数据
 
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_BOOL, &st, TSL_TYPE_BOOL, &test_bool, sizeof(test_bool));
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_BOOL, &st, TSL_TYPE_BOOL, &test_bool, sizeof(test_bool));                         //添加结构体成员数据
 
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st, TSL_TYPE_STRING, test_string, strlen((const char *)test_string));
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st, TSL_TYPE_STRING, test_string, strlen((const char *)test_string));    //添加结构体成员数据
 
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_DOUBLE, &st, TSL_TYPE_DOUBLE, (unsigned char *)&test_double, sizeof(test_double));
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_DOUBLE, &st, TSL_TYPE_DOUBLE, (unsigned char *)&test_double, sizeof(test_double));  //添加结构体成员数据
     mcu_tsl_struct_update(&st); // 结构体型数据上报;
 }
 
@@ -253,6 +253,7 @@ static unsigned char tsl_download_test_struct_handle(const unsigned char value[]
     // 示例:当前tsl类型为STRUCT
     unsigned char ret = SUCCESS;
 
+    // 解析下发结构体数据变量定义
     mcu_tsl_struct_t st = {0};
     unsigned short tslid;
     unsigned char tsl_type;
@@ -265,12 +266,15 @@ static unsigned char tsl_download_test_struct_handle(const unsigned char value[]
     unsigned char string_value[100] = {0};
     unsigned short string_len = 0;
 
+    // 回传结构体数据变量定义
     mcu_tsl_struct_t st_send = {0};
     unsigned char buf[200] = {0};
     mcu_tsl_struct_init(TSLID_TEST_STRUCT, &st_send, buf, sizeof(buf));
 
+    // 解析结构体数据
     mcu_tsl_struct_parser(&st, (unsigned char *)value, length);
 
+    // 循环迭代解析结构体的每个成员数据
     while (mcu_tsl_struct_get_item(&st, &tslid, &tsl_type, tsl_value, &tsl_length))
     {
         switch (tslid)
@@ -324,7 +328,7 @@ static unsigned char tsl_download_test_struct_handle(const unsigned char value[]
 
     // There should be a report after processing the tsl
 
-    mcu_tsl_struct_update(&st_send); //结构体型数据上报;
+    mcu_tsl_struct_update(&st_send); //结构体型数据回传上报;
 
     if (ret == SUCCESS)
         return SUCCESS;

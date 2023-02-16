@@ -153,18 +153,30 @@ unsigned char mcu_tsl_double_update(unsigned short tslid, double value);
 
 /**
  * @brief  struct/arrary型tsl数据点初始化
- * @param[in] {void} 无
- * @return 无
+ * @param[in] {tslid} tslid号
+ * @param[in] {st} 结构体变量指针
+ * @param[in] {buffer} 组装结构体数据的缓存地址
+ * @param[in] {buffer_len} 与buffer对应的缓存大小
+ * @return Null
+ * @note   Null
  */
 int mcu_tsl_struct_init(unsigned short tslid, mcu_tsl_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
 
+/**
+ * @brief  添加结构体的成员数据
+ * @param[in] {tslid} 结构体成员的tslid号
+ * @param[in] {st} 结构体变量指针
+ * @param[in] {type} 成员的数据类型
+ * @param[in] {value} 成员的数据地址
+ * @param[in] {len} 成员的数据value的大小
+ * @return Null
+ * @note   Null
+ */
 int mcu_tsl_struct_add_item(unsigned short tslid, mcu_tsl_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
 
 /**
  * @brief  struct/arrary型tsl数据上传
- * @param[in] {tslid} tslid号
- * @param[in] {value} 当前tsl值指针
- * @param[in] {len} 数据长度
+ * @param[in] {st} 结构体变量指针
  * @return Null
  * @note   Null
  */
@@ -248,8 +260,26 @@ unsigned char mcu_get_tsl_download_string(const unsigned char value[],unsigned s
  */
 double mcu_get_tsl_download_double(const unsigned char value[],unsigned short len);
 
+/**
+ * @brief  mcu解析struct/arrary型下发tsl值
+ * @param[in] {st} 结构体变量地址
+ * @param[in] {buffer} tsl数据缓冲区地址
+ * @param[in] {buffer_len} tsl数据长度
+ * @return 当前tsl值
+ * @note   Null
+ */
 int mcu_tsl_struct_parser(mcu_tsl_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
 
+/**
+ * @brief  mcu获取struct/arrary型下发的成员tsl值
+ * @param[in] {st} 结构体变量地址
+ * @param[out] {tslid} 存储结构体/数组成员tslid的变量地址
+ * @param[out] {type} 存储结构体/数组成员类型的地址
+ * @param[out] {value} 存储结构体/数组成员数据的地址
+ * @param[out] {len} 存储结构体/数组成员数据长度的地址
+ * @return 当前tsl值
+ * @note   类似一个迭代器，需要循环调用此接口获取出所有的元素
+ */
 int mcu_tsl_struct_get_item(mcu_tsl_struct_t *st, unsigned short *tslid, unsigned char *type, unsigned char *value, unsigned short *len);
 
 /**

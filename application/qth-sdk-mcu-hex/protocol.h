@@ -86,37 +86,49 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
 ******************************************************************************/
 // #error "请将功能点ID与平台上设置的保持一致,并删除该行"
 
-//RAW类型物模型
+//RAW类型物模型功能ID
 //备注:
 // #define TSLID_TEST_RAW 4
 
-//BOOL类型物模型
+//BOOL类型物模型功能ID
 //备注:
 #define TSLID_TEST_BOOL 1
 
-//INT类型物模型
+//INT类型物模型功能ID
 //备注：
 #define TSLID_TEST_VALUE 3
 
-//STRING 类型物模型
+//STRING 类型物模型功能ID
 //备注:
 #define TSLID_TEST_STRING 5
 
-//FAULT类型(特殊结构的物模型)
+//FAULT类型(特殊结构的物模型)功能ID
 //备注:
 #define TSLID_TEST_FAULT 6
 
-//DOUBLE 类型物模型
+//DOUBLE 类型物模型功能ID
 //备注:
 #define TSLID_TEST_DOUBLE 7
 
+//STRUCT 类型物模型功能ID
+//备注:
 #define TSLID_TEST_STRUCT 2
 
 #if defined(TSLID_TEST_STRUCT)
+//STRUCT 类型的成员RAW物模型功能ID
+//备注:
 // #define TSLID_TEST_STRUCT_SUB_RAW 5
+//STRUCT 类型的成员BOOL物模型功能ID
+//备注:
 #define TSLID_TEST_STRUCT_SUB_BOOL 1
+//STRUCT 类型的成员VALUE物模型功能ID
+//备注:
 #define TSLID_TEST_STRUCT_SUB_VALUE 2
+//STRUCT 类型的成员DOUBLE物模型功能ID
+//备注:
 #define TSLID_TEST_STRUCT_SUB_DOUBLE 3
+//STRUCT 类型的成员STRING物模型功能ID
+//备注:
 #define TSLID_TEST_STRUCT_SUB_STRING 4
 #endif
 
