@@ -731,36 +731,6 @@ unsigned char mcu_get_tsl_download_string(const unsigned char value[],unsigned s
     return SUCCESS;
 }
 
-/**
- * @brief  mcu获取fault型下发tsl值
- * @param[in] {value} tsl数据缓冲区地址
- * @param[in] {len} tsl数据长度
- * @return 当前tsl值
- * @note   Null
- */
-unsigned long mcu_get_tsl_download_fault(const unsigned char value[],unsigned short len)
-{
-    unsigned long temp = 0;
-
-    if (len == 1)
-    {
-        temp = value[0];
-    }
-    else if (len == 2)
-    {
-        temp = value[0] << 8;
-        temp |= value[1];
-    }
-    else
-    {
-        temp = value[0] << 24;
-        temp |= value[1] << 16;
-        temp |= value[2] << 8;
-        temp |= value[3];
-    }
-
-    return temp;
-}
 
 /**
  * @brief  mcu获取double型下发tsl值

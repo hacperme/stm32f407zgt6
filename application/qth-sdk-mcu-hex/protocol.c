@@ -210,33 +210,6 @@ static unsigned char tsl_download_test_string_handle(const unsigned char value[]
 }
 
 
-/*****************************************************************************
-函数名称 : tsl_download_test_fault_handle
-功能描述 : 针对TSLID_TEST_FAULT的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char tsl_download_test_fault_handle(const unsigned char value[], unsigned short length)
-{
-    //示例:当前tsl类型为ENUM
-    unsigned char ret = SUCCESS;
-    unsigned long enum_value;
-    
-    enum_value = mcu_get_tsl_download_fault(value,length);
-
-    
-    printf("set fault_value:0x%0ld\r\n", enum_value);
-    
-    //There should be a report after processing the tsl
-    ret = mcu_tsl_fault_update(TSLID_TEST_FAULT,enum_value);
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-
 
 /*****************************************************************************
 函数名称 : tsl_download_test_double_handle
@@ -400,10 +373,6 @@ unsigned char tsl_download_handle(unsigned short tslid,const unsigned char value
         case TSLID_TEST_STRING:
             //测试STRING类型数据处理函数
             ret = tsl_download_test_string_handle(value,length);
-        break;
-        case TSLID_TEST_FAULT: 
-            //测试FAULT类型数据处理函数
-            ret = tsl_download_test_fault_handle(value,length);
         break;
         case TSLID_TEST_DOUBLE:
             //测试DOUBLE类型数据处理函数

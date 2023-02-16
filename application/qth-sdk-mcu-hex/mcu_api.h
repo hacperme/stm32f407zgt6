@@ -238,14 +238,6 @@ unsigned long mcu_get_tsl_download_value(const unsigned char value[],unsigned sh
  */
 unsigned char mcu_get_tsl_download_string(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len);
 
-/**
- * @brief  mcu获取fault型下发tsl值
- * @param[in] {value} tsl数据缓冲区地址
- * @param[in] {len} tsl数据长度
- * @return 当前tsl值
- * @note   Null
- */
-unsigned long mcu_get_tsl_download_fault(const unsigned char value[],unsigned short len);
 
 /**
  * @brief  mcu获取double型下发tsl值
