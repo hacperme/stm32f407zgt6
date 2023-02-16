@@ -182,7 +182,7 @@ int mcu_tsl_struct_add_item(unsigned short tslid, mcu_tsl_struct_t *st, unsigned
  */
 unsigned char mcu_tsl_struct_update(mcu_tsl_struct_t *st);
 
-#ifdef MCU_tsl_UPLOAD_SYN
+#ifdef MCU_TSL_UPLOAD_SYN
 /**
  * @brief  bool型tsl数据同步上传
  * @param[in] {tslid} tslid号

@@ -547,13 +547,7 @@ void get_wifi_status(unsigned char result)
             // wifi状态 5 已连上路由器且连接到云端
         break;
         
-        case 5:
-            //wifi工作状态6
-        break;
-      
-        case 6:
-            //wifi工作状态7
-        break;
+        
         
         default:break;
     }
