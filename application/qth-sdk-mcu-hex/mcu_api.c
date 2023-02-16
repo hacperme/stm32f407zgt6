@@ -178,23 +178,23 @@ unsigned long byte_to_int(const unsigned char value[4])
 }
 
 /**
- * @brief  raw型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  raw型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @param[in] {len} 数据长度
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_raw_update(unsigned short dpid,const unsigned char value[],unsigned short len)
+unsigned char mcu_tsl_raw_update(unsigned short tslid,const unsigned char value[],unsigned short len)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     //
-    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
-    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
-    send_len = set_wifi_uart_byte(send_len, DP_TYPE_RAW);
+    send_len = set_wifi_uart_byte(send_len, (tslid >> 8));
+    send_len = set_wifi_uart_byte(send_len, tslid & 0xff);
+    send_len = set_wifi_uart_byte(send_len,TSL_TYPE_RAW);
     //
     send_len = set_wifi_uart_byte(send_len,len / 0x100);
     send_len = set_wifi_uart_byte(send_len,len % 0x100);
@@ -207,22 +207,22 @@ unsigned char mcu_dp_raw_update(unsigned short dpid,const unsigned char value[],
 }
 
 /**
- * @brief  bool型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值
+ * @brief  bool型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update(unsigned short dpid,unsigned char value)
+unsigned char mcu_tsl_bool_update(unsigned short tslid,unsigned char value)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
 
-    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
-    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
-    send_len = set_wifi_uart_byte(send_len,DP_TYPE_BOOL);
+    send_len = set_wifi_uart_byte(send_len, (tslid >> 8));
+    send_len = set_wifi_uart_byte(send_len, tslid & 0xff);
+    send_len = set_wifi_uart_byte(send_len,TSL_TYPE_BOOL);
     //
     send_len = set_wifi_uart_byte(send_len,0);
     send_len = set_wifi_uart_byte(send_len,1);
@@ -239,22 +239,22 @@ unsigned char mcu_dp_bool_update(unsigned short dpid,unsigned char value)
 }
 
 /**
- * @brief  value型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值
+ * @brief  value型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update(unsigned short dpid, unsigned long value)
+unsigned char mcu_tsl_value_update(unsigned short tslid, unsigned long value)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
-    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
-    send_len = set_wifi_uart_byte(send_len,DP_TYPE_VALUE);
+    send_len = set_wifi_uart_byte(send_len, (tslid >> 8));
+    send_len = set_wifi_uart_byte(send_len, tslid & 0xff);
+    send_len = set_wifi_uart_byte(send_len,TSL_TYPE_VALUE);
     //
     send_len = set_wifi_uart_byte(send_len,0);
     send_len = set_wifi_uart_byte(send_len,4);
@@ -270,22 +270,22 @@ unsigned char mcu_dp_value_update(unsigned short dpid, unsigned long value)
 }
 
 /**
- * @brief  fault型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值
+ * @brief  fault型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update(unsigned short dpid, unsigned long value)
+unsigned char mcu_tsl_fault_update(unsigned short tslid, unsigned long value)
 {
     unsigned short send_len = 0;
      
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
-    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
-    send_len = set_wifi_uart_byte(send_len,DP_TYPE_BITMAP);
+    send_len = set_wifi_uart_byte(send_len, (tslid >> 8));
+    send_len = set_wifi_uart_byte(send_len, tslid & 0xff);
+    send_len = set_wifi_uart_byte(send_len,TSL_TYPE_BITMAP);
     //
     send_len = set_wifi_uart_byte(send_len,0);
     
@@ -310,23 +310,23 @@ unsigned char mcu_dp_fault_update(unsigned short dpid, unsigned long value)
 }
 
 /**
- * @brief  string型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  string型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @param[in] {len} 数据长度
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_string_update(unsigned short dpid, const unsigned char value[],unsigned short len)
+unsigned char mcu_tsl_string_update(unsigned short tslid, const unsigned char value[],unsigned short len)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     //
-    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
-    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
-    send_len = set_wifi_uart_byte(send_len,DP_TYPE_STRING);
+    send_len = set_wifi_uart_byte(send_len, (tslid >> 8));
+    send_len = set_wifi_uart_byte(send_len, tslid & 0xff);
+    send_len = set_wifi_uart_byte(send_len,TSL_TYPE_STRING);
     //
     send_len = set_wifi_uart_byte(send_len,len / 0x100);
     send_len = set_wifi_uart_byte(send_len,len % 0x100);
@@ -339,13 +339,13 @@ unsigned char mcu_dp_string_update(unsigned short dpid, const unsigned char valu
 }
 
 /**
- * @brief  fault型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值
+ * @brief  fault型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_double_update(unsigned short dpid, double value)
+unsigned char mcu_tsl_double_update(unsigned short tslid, double value)
 {
     unsigned short send_len = 0;
     unsigned char *p = (unsigned char *)&value;
@@ -353,9 +353,9 @@ unsigned char mcu_dp_double_update(unsigned short dpid, double value)
     if (stop_update_flag == ENABLE)
         return SUCCESS;
 
-    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
-    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
-    send_len = set_wifi_uart_byte(send_len, DP_TYPE_DOUBLE);
+    send_len = set_wifi_uart_byte(send_len, (tslid >> 8));
+    send_len = set_wifi_uart_byte(send_len, tslid & 0xff);
+    send_len = set_wifi_uart_byte(send_len, TSL_TYPE_DOUBLE);
     //
     send_len = set_wifi_uart_byte(send_len, 0);
     send_len = set_wifi_uart_byte(send_len, 8);
@@ -375,14 +375,14 @@ unsigned char mcu_dp_double_update(unsigned short dpid, double value)
 }
 
 /**
- * @brief  struct/arrary型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  struct/arrary型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @param[in] {len} 数据长度
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_struct_update(mcu_dp_struct_t *st)
+unsigned char mcu_tsl_struct_update(mcu_tsl_struct_t *st)
 {
     unsigned short send_len = 0;
     if(st == NULL)
@@ -400,11 +400,11 @@ unsigned char mcu_dp_struct_update(mcu_dp_struct_t *st)
 
 
 /**
- * @brief  struct/arrary型dp数据点初始化
+ * @brief  struct/arrary型tsl数据点初始化
  * @param[in] {void} 无
  * @return 无
  */
-int mcu_dp_struct_init(unsigned short dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len)
+int mcu_tsl_struct_init(unsigned short tslid, mcu_tsl_struct_t *st, unsigned char *buffer, unsigned short buffer_len)
 {
     if(st == NULL || buffer == NULL || buffer_len == 0)
         return ERROR;
@@ -413,9 +413,9 @@ int mcu_dp_struct_init(unsigned short dpid, mcu_dp_struct_t *st, unsigned char *
     st->buffer_len = buffer_len;
     st->offset = 0;
 
-    st->buffer[st->offset++] = (dpid >> 8);
-    st->buffer[st->offset++] = (dpid & 0xff);
-    st->buffer[st->offset++] = DP_TYPE_STRUCT;
+    st->buffer[st->offset++] = (tslid >> 8);
+    st->buffer[st->offset++] = (tslid & 0xff);
+    st->buffer[st->offset++] = TSL_TYPE_STRUCT;
     // length
     st->buffer[st->offset++] = st->value_len / 0x100;
     st->buffer[st->offset++] = st->value_len % 0x100;
@@ -423,7 +423,7 @@ int mcu_dp_struct_init(unsigned short dpid, mcu_dp_struct_t *st, unsigned char *
     return SUCCESS;
 }
 
-int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len)
+int mcu_tsl_struct_add_item(unsigned short tslid, mcu_tsl_struct_t *st, unsigned char type, unsigned char *value, unsigned short len)
 {
     if (st == NULL || value == NULL || len == 0)
         return ERROR;
@@ -432,10 +432,10 @@ int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned ch
         return ERROR;
     switch (type)
     {
-    case DP_TYPE_RAW:
-        st->buffer[st->offset++] = (dpid >> 8);
-        st->buffer[st->offset++] = (dpid & 0xff);
-        st->buffer[st->offset++] = DP_TYPE_RAW;
+    case TSL_TYPE_RAW:
+        st->buffer[st->offset++] = (tslid >> 8);
+        st->buffer[st->offset++] = (tslid & 0xff);
+        st->buffer[st->offset++] = TSL_TYPE_RAW;
         // length
         st->buffer[st->offset++] = len / 0x100;
         st->buffer[st->offset++] = len % 0x100;
@@ -447,10 +447,10 @@ int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned ch
         st->buffer[3] = st->value_len / 0x100;
         st->buffer[4] = st->value_len % 0x100;
         break;
-    case DP_TYPE_BOOL:
-        st->buffer[st->offset++] = (dpid >> 8);
-        st->buffer[st->offset++] = (dpid & 0xff);
-        st->buffer[st->offset++] = DP_TYPE_BOOL;
+    case TSL_TYPE_BOOL:
+        st->buffer[st->offset++] = (tslid >> 8);
+        st->buffer[st->offset++] = (tslid & 0xff);
+        st->buffer[st->offset++] = TSL_TYPE_BOOL;
         // length
         st->buffer[st->offset++] = 0;
         st->buffer[st->offset++] = 1;
@@ -461,10 +461,10 @@ int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned ch
         st->buffer[3] = st->value_len / 0x100;
         st->buffer[4] = st->value_len % 0x100;
         break;
-    case DP_TYPE_VALUE:
-        st->buffer[st->offset++] = (dpid >> 8);
-        st->buffer[st->offset++] = (dpid & 0xff);
-        st->buffer[st->offset++] = DP_TYPE_VALUE;
+    case TSL_TYPE_VALUE:
+        st->buffer[st->offset++] = (tslid >> 8);
+        st->buffer[st->offset++] = (tslid & 0xff);
+        st->buffer[st->offset++] = TSL_TYPE_VALUE;
         // length
         st->buffer[st->offset++] = 0;
         st->buffer[st->offset++] = 4;
@@ -479,10 +479,10 @@ int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned ch
         st->buffer[4] = st->value_len % 0x100;
         break;
 
-    case DP_TYPE_STRING:
-        st->buffer[st->offset++] = (dpid >> 8);
-        st->buffer[st->offset++] = (dpid & 0xff);
-        st->buffer[st->offset++] = DP_TYPE_STRING;
+    case TSL_TYPE_STRING:
+        st->buffer[st->offset++] = (tslid >> 8);
+        st->buffer[st->offset++] = (tslid & 0xff);
+        st->buffer[st->offset++] = TSL_TYPE_STRING;
         // length
         st->buffer[st->offset++] = len / 0x100;
         st->buffer[st->offset++] = len % 0x100;
@@ -495,10 +495,10 @@ int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned ch
         st->buffer[4] = st->value_len % 0x100;
 
         break;
-    case DP_TYPE_DOUBLE:
-        st->buffer[st->offset++] = (dpid >> 8);
-        st->buffer[st->offset++] = (dpid & 0xff);
-        st->buffer[st->offset++] = DP_TYPE_DOUBLE;
+    case TSL_TYPE_DOUBLE:
+        st->buffer[st->offset++] = (tslid >> 8);
+        st->buffer[st->offset++] = (tslid & 0xff);
+        st->buffer[st->offset++] = TSL_TYPE_DOUBLE;
         // length
         st->buffer[st->offset++] = 0;
         st->buffer[st->offset++] = 8;
@@ -523,7 +523,7 @@ int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned ch
     return SUCCESS;
 }
 
-int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len)
+int mcu_tsl_struct_parser(mcu_tsl_struct_t *st, unsigned char *buffer, unsigned short buffer_len)
 {
 
     if (st == NULL || buffer == NULL || buffer_len == 0)
@@ -537,17 +537,17 @@ int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned sh
     return SUCCESS;
 }
 
-int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned short *dpid, unsigned char *type, unsigned char *value, unsigned short *len)
+int mcu_tsl_struct_get_item(mcu_tsl_struct_t *st, unsigned short *tslid, unsigned char *type, unsigned char *value, unsigned short *len)
 {
     unsigned short offset = 0;
     unsigned short value_len = 0;
     
-    if (st == NULL || dpid == NULL || type == NULL || value == NULL || len == NULL)
+    if (st == NULL || tslid == NULL || type == NULL || value == NULL || len == NULL)
         return ERROR;
     if ((st->offset+5) > st->buffer_len)
         return ERROR;
 
-    *dpid = (st->buffer[st->offset] << 8) | st->buffer[st->offset+1];
+    *tslid = (st->buffer[st->offset] << 8) | st->buffer[st->offset+1];
     st->offset += 2;
     *type = st->buffer[st->offset++];
     value_len = (st->buffer[st->offset] << 8) | st->buffer[st->offset+1];
@@ -563,22 +563,22 @@ int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned short *dpid, unsigned c
 }
 
 /**
- * @brief  bool型dp数据同步上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  bool型tsl数据同步上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update_syn(unsigned short dpid,unsigned char value)
+unsigned char mcu_tsl_bool_update_syn(unsigned short tslid,unsigned char value)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
-    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
-    send_len = set_wifi_uart_byte(send_len,DP_TYPE_BOOL);
+    send_len = set_wifi_uart_byte(send_len, (tslid >> 8));
+    send_len = set_wifi_uart_byte(send_len, tslid & 0xff);
+    send_len = set_wifi_uart_byte(send_len,TSL_TYPE_BOOL);
     //
     send_len = set_wifi_uart_byte(send_len,0);
     send_len = set_wifi_uart_byte(send_len,1);
@@ -595,22 +595,22 @@ unsigned char mcu_dp_bool_update_syn(unsigned short dpid,unsigned char value)
 }
 
 /**
- * @brief  value型dp数据同步上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  value型tsl数据同步上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update_syn(unsigned short dpid,unsigned long value)
+unsigned char mcu_tsl_value_update_syn(unsigned short tslid,unsigned long value)
 {
     unsigned short send_len = 0;
     
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
-    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
-    send_len = set_wifi_uart_byte(send_len,DP_TYPE_VALUE);
+    send_len = set_wifi_uart_byte(send_len, (tslid >> 8));
+    send_len = set_wifi_uart_byte(send_len, tslid & 0xff);
+    send_len = set_wifi_uart_byte(send_len,TSL_TYPE_VALUE);
     //
     send_len = set_wifi_uart_byte(send_len,0);
     send_len = set_wifi_uart_byte(send_len,4);
@@ -626,22 +626,22 @@ unsigned char mcu_dp_value_update_syn(unsigned short dpid,unsigned long value)
 }
 
 /**
- * @brief  fault型dp数据同步上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  fault型tsl数据同步上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update_syn(unsigned short dpid,unsigned long value)
+unsigned char mcu_tsl_fault_update_syn(unsigned short tslid,unsigned long value)
 {
     unsigned short send_len = 0;
      
     if(stop_update_flag == ENABLE)
         return SUCCESS;
     
-    send_len = set_wifi_uart_byte(send_len, (dpid >> 8));
-    send_len = set_wifi_uart_byte(send_len, dpid & 0xff);
-    send_len = set_wifi_uart_byte(send_len,DP_TYPE_BITMAP);
+    send_len = set_wifi_uart_byte(send_len, (tslid >> 8));
+    send_len = set_wifi_uart_byte(send_len, tslid & 0xff);
+    send_len = set_wifi_uart_byte(send_len,TSL_TYPE_BITMAP);
     //
     send_len = set_wifi_uart_byte(send_len,0);
     
@@ -667,15 +667,15 @@ unsigned char mcu_dp_fault_update_syn(unsigned short dpid,unsigned long value)
 
 
 /**
- * @brief  mcu获取raw型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
+ * @brief  mcu获取raw型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
  * @param[out] {value} raw 数据缓冲区地址
  * @param[out] {out_len} raw 数据长度
- * @return 当前dp值
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned char mcu_get_dp_download_raw(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len)
+unsigned char mcu_get_tsl_download_raw(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len)
 {
     unsigned short i;
     
@@ -688,38 +688,38 @@ unsigned char mcu_get_dp_download_raw(const unsigned char value[],unsigned short
 }
 
 /**
- * @brief  mcu获取bool型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
- * @return 当前dp值
+ * @brief  mcu获取bool型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned char mcu_get_dp_download_bool(const unsigned char value[],unsigned short len)
+unsigned char mcu_get_tsl_download_bool(const unsigned char value[],unsigned short len)
 {
     return(value[0]);
 }
 /**
- * @brief  mcu获取value型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
- * @return 当前dp值
+ * @brief  mcu获取value型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned long mcu_get_dp_download_value(const unsigned char value[],unsigned short len)
+unsigned long mcu_get_tsl_download_value(const unsigned char value[],unsigned short len)
 {
     return(byte_to_int(value));
 }
 
 /**
- * @brief  mcu获取string型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
+ * @brief  mcu获取string型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
  * @param[out] {value} string 数据缓冲区地址
  * @param[out] {out_len} string 数据长度
- * @return 当前dp值
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned char mcu_get_dp_download_string(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len)
+unsigned char mcu_get_tsl_download_string(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len)
 {
     unsigned short i;
     
@@ -732,13 +732,13 @@ unsigned char mcu_get_dp_download_string(const unsigned char value[],unsigned sh
 }
 
 /**
- * @brief  mcu获取fault型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
- * @return 当前dp值
+ * @brief  mcu获取fault型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned long mcu_get_dp_download_fault(const unsigned char value[],unsigned short len)
+unsigned long mcu_get_tsl_download_fault(const unsigned char value[],unsigned short len)
 {
     unsigned long temp = 0;
 
@@ -763,13 +763,13 @@ unsigned long mcu_get_dp_download_fault(const unsigned char value[],unsigned sho
 }
 
 /**
- * @brief  mcu获取double型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
- * @return 当前dp值
+ * @brief  mcu获取double型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
+ * @return 当前tsl值
  * @note   Null
  */
-double mcu_get_dp_download_double(const unsigned char value[], unsigned short len)
+double mcu_get_tsl_download_double(const unsigned char value[], unsigned short len)
 {
     double temp = 0;
     unsigned char *p = (unsigned char *)&temp;

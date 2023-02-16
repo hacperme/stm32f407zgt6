@@ -192,17 +192,17 @@ static void product_info_update(void)
 }
 
 /**
- * @brief  获取制定DPID在数组中的序号
- * @param[in] {dpid} dpid
- * @return dp序号
+ * @brief  获取制定TSLID在数组中的序号
+ * @param[in] {tslid} tslid
+ * @return tsl序号
  */
-static unsigned char get_dowmload_dpid_index(unsigned short dpid)
+static unsigned char get_dowmload_tslid_index(unsigned short tslid)
 {
     unsigned char index;
     unsigned char total = get_download_cmd_total();
     
     for(index = 0; index < total; index ++) {
-        if(download_cmd[index].dp_id == dpid) {
+        if(download_cmd[index].tsl_id == tslid) {
             break;
         }
     }
@@ -217,24 +217,24 @@ static unsigned char get_dowmload_dpid_index(unsigned short dpid)
  */
 static unsigned char data_point_handle(const unsigned char value[])
 {
-    unsigned short dp_id;
+    unsigned short tsl_id;
     unsigned char index;
-    unsigned char dp_type;
+    unsigned char tsl_type;
     unsigned char ret;
-    unsigned short dp_len;
+    unsigned short tsl_len;
     
-    dp_id = (value[0] << 8) | value[1];
-    dp_type = value[2];
-    dp_len = value[3] * 0x100;
-    dp_len += value[4];
+    tsl_id = (value[0] << 8) | value[1];
+    tsl_type = value[2];
+    tsl_len = value[3] * 0x100;
+    tsl_len += value[4];
     
-    index = get_dowmload_dpid_index(dp_id);
+    index = get_dowmload_tslid_index(tsl_id);
 
-    if(dp_type != download_cmd[index].dp_type) {
+    if(tsl_type != download_cmd[index].tsl_type) {
         //错误提示
         return FALSE;
     }else {
-        ret = dp_download_handle(dp_id,value + 5,dp_len);
+        ret = tsl_download_handle(tsl_id,value + 5,tsl_len);
     }
     
     return ret;
@@ -256,10 +256,10 @@ void data_handle(unsigned short offset)
     static unsigned short firm_size;                                            //升级包一包的大小
     static unsigned long firm_length;                                           //MCU升级文件长度
     static unsigned char firm_update_flag = 0;                                  //MCU升级标志
-    unsigned long dp_len;
+    unsigned long tsl_len;
     unsigned char firm_flag;                                                    //升级包大小标志
 #else
-    unsigned short dp_len;
+    unsigned short tsl_len;
 #endif
   
     unsigned char ret;
@@ -294,8 +294,8 @@ void data_handle(unsigned short offset)
             total_len = (wifi_data_process_buf[offset + LENGTH_HIGH] << 8) | wifi_data_process_buf[offset + LENGTH_LOW];
     
             for(i = 0;i < total_len; ) {
-                dp_len = wifi_data_process_buf[offset + DATA_START + i + 2] * 0x100;
-                dp_len += wifi_data_process_buf[offset + DATA_START + i + 3];
+                tsl_len = wifi_data_process_buf[offset + DATA_START + i + 2] * 0x100;
+                tsl_len += wifi_data_process_buf[offset + DATA_START + i + 3];
                 //
                 ret = data_point_handle((unsigned char *)wifi_data_process_buf + offset + DATA_START + i);
       
@@ -305,7 +305,7 @@ void data_handle(unsigned short offset)
                     //错误提示
                 }
       
-                i += (dp_len + 4);
+                i += (tsl_len + 4);
             }
         break;
     
@@ -344,23 +344,23 @@ void data_handle(unsigned short offset)
       
                 total_len = (wifi_data_process_buf[offset + LENGTH_HIGH] << 8) | wifi_data_process_buf[offset + LENGTH_LOW];
       
-                dp_len = wifi_data_process_buf[offset + DATA_START];
-                dp_len <<= 8;
-                dp_len |= wifi_data_process_buf[offset + DATA_START + 1];
-                dp_len <<= 8;
-                dp_len |= wifi_data_process_buf[offset + DATA_START + 2];
-                dp_len <<= 8;
-                dp_len |= wifi_data_process_buf[offset + DATA_START + 3];
+                tsl_len = wifi_data_process_buf[offset + DATA_START];
+                tsl_len <<= 8;
+                tsl_len |= wifi_data_process_buf[offset + DATA_START + 1];
+                tsl_len <<= 8;
+                tsl_len |= wifi_data_process_buf[offset + DATA_START + 2];
+                tsl_len <<= 8;
+                tsl_len |= wifi_data_process_buf[offset + DATA_START + 3];
       
                 firmware_addr = (unsigned char *)wifi_data_process_buf;
                 firmware_addr += (offset + DATA_START + 4);
       
-                if((total_len == 4) && (dp_len == firm_length)) {
+                if((total_len == 4) && (tsl_len == firm_length)) {
                     //最后一包
-                    ret = mcu_firm_update_handle(firmware_addr,dp_len,0);
+                    ret = mcu_firm_update_handle(firmware_addr,tsl_len,0);
                     firm_update_flag = 0;
                 }else if((total_len - 4) <= firm_size) {
-                    ret = mcu_firm_update_handle(firmware_addr,dp_len,total_len - 4);
+                    ret = mcu_firm_update_handle(firmware_addr,tsl_len,total_len - 4);
                 }else {
                     firm_update_flag = 0;
                     ret = ERROR;
@@ -402,7 +402,7 @@ void data_handle(unsigned short offset)
         break;
 
 
-#ifdef MCU_DP_UPLOAD_SYN
+#ifdef MCU_TSL_UPLOAD_SYN
         case STATE_UPLOAD_SYN_RECV_CMD:                         //状态上报（同步）
             result = wifi_data_process_buf[offset + DATA_START];
             get_upload_syn_result(result);

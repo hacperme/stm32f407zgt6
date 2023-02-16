@@ -47,15 +47,15 @@
 #define         DISABLE          0
 #endif
 //=============================================================================
-//dp数据点类型
+//tsl 数据点类型
 //=============================================================================
-#define         DP_TYPE_RAW                     0x00        //RAW 类型
-#define         DP_TYPE_BOOL                    0x01        //bool 类型
-#define         DP_TYPE_VALUE                   0x02        //int 或者枚举 类型
-#define         DP_TYPE_STRING                  0x03        //string 类型
-#define         DP_TYPE_BITMAP                  0x05        //fault 类型
-#define         DP_TYPE_DOUBLE                  0x11        //double 类型
-#define         DP_TYPE_STRUCT                  0x12        //struct/array 类型
+#define         TSL_TYPE_RAW                     0x00        //RAW 类型
+#define         TSL_TYPE_BOOL                    0x01        //bool 类型
+#define         TSL_TYPE_VALUE                   0x02        //int 或者枚举 类型
+#define         TSL_TYPE_STRING                  0x03        //string 类型
+#define         TSL_TYPE_BITMAP                  0x05        //fault 类型
+#define         TSL_TYPE_DOUBLE                  0x11        //double 类型
+#define         TSL_TYPE_STRUCT                  0x12        //struct/array 类型
 //=============================================================================
 //WIFI工作状态
 //=============================================================================
@@ -89,8 +89,8 @@
 //下发命令
 //=============================================================================
 typedef struct {
-  unsigned short dp_id;                              //dp序号
-  unsigned char dp_type;                            //dp类型
+  unsigned short tsl_id;                              //tsl序号
+  unsigned char tsl_type;                            //tsl类型
 } DOWNLOAD_CMD_S;
 
 #endif

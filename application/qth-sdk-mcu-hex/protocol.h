@@ -35,7 +35,7 @@ MCU可调用mcu_api.c文件内的mcu_firm_update_query()函数获取当前MCU固
 ******************************************************************************/
 #ifndef SUPPORT_MCU_FIRM_UPDATE
 #define WIFI_UART_RECV_BUF_LMT          16              //串口数据接收缓存区大小,如MCU的RAM不够,可缩小
-#define WIFI_DATA_PROCESS_LMT           1024              //串口数据处理缓存区大小,根据用户DP数据大小量定,必须大于24
+#define WIFI_DATA_PROCESS_LMT           1024              //串口数据处理缓存区大小,根据用户TSL数据大小量定,必须大于24
 #else
 #define WIFI_UART_RECV_BUF_LMT          128             //串口数据接收缓存区大小,如MCU的RAM不够,可缩小
 
@@ -96,7 +96,7 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
 2) 每次发送模组都会有响应，WIFI 模组未响应前不可多次上报；
 3) 网络不好，数据难以及时上报时，模块会在 5 后返回失败，MCU 需要等待大于 5 秒。
 ******************************************************************************/
-//#define         MCU_DP_UPLOAD_SYN                   //开启同步状态上报功能
+//#define         MCU_TSL_UPLOAD_SYN                   //开启同步状态上报功能
 
 
 
@@ -111,36 +111,36 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
 
 //RAW类型物模型
 //备注:
-// #define DPID_TEST_RAW 4
+// #define TSLID_TEST_RAW 4
 
 //BOOL类型物模型
 //备注:
-#define DPID_TEST_BOOL 1
+#define TSLID_TEST_BOOL 1
 
 //INT类型物模型
 //备注：
-#define DPID_TEST_VALUE 3
+#define TSLID_TEST_VALUE 3
 
 //STRING 类型物模型
 //备注:
-#define DPID_TEST_STRING 5
+#define TSLID_TEST_STRING 5
 
 //FAULT类型(特殊结构的物模型)
 //备注:
-#define DPID_TEST_FAULT 6
+#define TSLID_TEST_FAULT 6
 
 //DOUBLE 类型物模型
 //备注:
-#define DPID_TEST_DOUBLE 7
+#define TSLID_TEST_DOUBLE 7
 
-#define DPID_TEST_STRUCT 2
+#define TSLID_TEST_STRUCT 2
 
-#if defined(DPID_TEST_STRUCT)
-// #define DPID_TEST_STRUCT_SUB_RAW 5
-#define DPID_TEST_STRUCT_SUB_BOOL 1
-#define DPID_TEST_STRUCT_SUB_VALUE 2
-#define DPID_TEST_STRUCT_SUB_DOUBLE 3
-#define DPID_TEST_STRUCT_SUB_STRING 4
+#if defined(TSLID_TEST_STRUCT)
+// #define TSLID_TEST_STRUCT_SUB_RAW 5
+#define TSLID_TEST_STRUCT_SUB_BOOL 1
+#define TSLID_TEST_STRUCT_SUB_VALUE 2
+#define TSLID_TEST_STRUCT_SUB_DOUBLE 3
+#define TSLID_TEST_STRUCT_SUB_STRING 4
 #endif
 
 /**
@@ -151,7 +151,7 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
 void uart_transmit_output(unsigned char value);
 
 /**
- * @brief  系统所有dp点信息上传,实现APP和muc数据同步
+ * @brief  系统所有tsl点信息上传,实现APP和muc数据同步
  * @param  Null
  * @return Null
  * @note   MCU必须实现该函数内数据上报功能
@@ -159,19 +159,19 @@ void uart_transmit_output(unsigned char value);
 void all_data_update(void);
 
 /**
- * @brief  dp下发处理函数
- * @param[in] {dpid} dpid 序号
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {length} dp数据长度
- * @return dp处理结果
+ * @brief  tsl下发处理函数
+ * @param[in] {tslid} tslid 序号
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {length} tsl数据长度
+ * @return tsl处理结果
  * -           0(ERROR): 失败
  * -           1(SUCCESS): 成功
  * @note   该函数用户不能修改
  */
-unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[], unsigned short length);
+unsigned char tsl_download_handle(unsigned short tslid,const unsigned char value[], unsigned short length);
 
 /**
- * @brief  获取所有dp命令总和
+ * @brief  获取所有tsl命令总和
  * @param[in] Null
  * @return 下发命令总和
  * @note   该函数用户不能修改
@@ -238,7 +238,7 @@ void wifi_test_result(unsigned char result,unsigned char rssi);
 
 
 
-#ifdef MCU_DP_UPLOAD_SYN
+#ifdef MCU_TSL_UPLOAD_SYN
 /**
  * @brief  状态同步上报结果
  * @param[in] {result} 结果

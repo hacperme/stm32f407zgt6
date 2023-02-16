@@ -15,7 +15,7 @@ typedef struct
   unsigned short buffer_len;
   unsigned short value_len;
   unsigned short offset;
-}mcu_dp_struct_t;
+}mcu_tsl_struct_t;
 
 
 
@@ -87,178 +87,178 @@ void int_to_byte(unsigned long number,unsigned char value[4]);
 unsigned long byte_to_int(const unsigned char value[4]);
 
 /**
- * @brief  raw型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  raw型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @param[in] {len} 数据长度
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_raw_update(unsigned short dpid,const unsigned char value[],unsigned short len);
+unsigned char mcu_tsl_raw_update(unsigned short tslid,const unsigned char value[],unsigned short len);
 
 /**
- * @brief  bool型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值
+ * @brief  bool型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update(unsigned short dpid,unsigned char value);
+unsigned char mcu_tsl_bool_update(unsigned short tslid,unsigned char value);
 
 /**
- * @brief  value型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值
+ * @brief  value型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值
  * @return Null
  * @note   Null
  */
 
 /**
- * @brief  value型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值
+ * @brief  value型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update(unsigned short dpid,unsigned long value);
+unsigned char mcu_tsl_value_update(unsigned short tslid,unsigned long value);
 
 /**
- * @brief  fault型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值
+ * @brief  fault型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update(unsigned short dpid,unsigned long value);
+unsigned char mcu_tsl_fault_update(unsigned short tslid,unsigned long value);
 
 
 /**
- * @brief  string型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  string型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @param[in] {len} 数据长度
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_string_update(unsigned short dpid,const unsigned char value[],unsigned short len);
+unsigned char mcu_tsl_string_update(unsigned short tslid,const unsigned char value[],unsigned short len);
 
 /**
- * @brief  double型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值
+ * @brief  double型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_double_update(unsigned short dpid, double value);
+unsigned char mcu_tsl_double_update(unsigned short tslid, double value);
 
 /**
- * @brief  struct/arrary型dp数据点初始化
+ * @brief  struct/arrary型tsl数据点初始化
  * @param[in] {void} 无
  * @return 无
  */
-int mcu_dp_struct_init(unsigned short dpid, mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
+int mcu_tsl_struct_init(unsigned short tslid, mcu_tsl_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
 
-int mcu_dp_struct_add_item(unsigned short dpid, mcu_dp_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
+int mcu_tsl_struct_add_item(unsigned short tslid, mcu_tsl_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
 
 /**
- * @brief  struct/arrary型dp数据上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  struct/arrary型tsl数据上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @param[in] {len} 数据长度
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_struct_update(mcu_dp_struct_t *st);
+unsigned char mcu_tsl_struct_update(mcu_tsl_struct_t *st);
 
-#ifdef MCU_DP_UPLOAD_SYN
+#ifdef MCU_tsl_UPLOAD_SYN
 /**
- * @brief  bool型dp数据同步上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  bool型tsl数据同步上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_bool_update_syn(unsigned short dpid,unsigned char value);
+unsigned char mcu_tsl_bool_update_syn(unsigned short tslid,unsigned char value);
 
 /**
- * @brief  value型dp数据同步上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  value型tsl数据同步上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_value_update_syn(unsigned short dpid,unsigned long value);
+unsigned char mcu_tsl_value_update_syn(unsigned short tslid,unsigned long value);
 
 /**
- * @brief  fault型dp数据同步上传
- * @param[in] {dpid} dpid号
- * @param[in] {value} 当前dp值指针
+ * @brief  fault型tsl数据同步上传
+ * @param[in] {tslid} tslid号
+ * @param[in] {value} 当前tsl值指针
  * @return Null
  * @note   Null
  */
-unsigned char mcu_dp_fault_update_syn(unsigned short dpid,unsigned long value);
+unsigned char mcu_tsl_fault_update_syn(unsigned short tslid,unsigned long value);
 #endif
 
 /**
- * @brief  mcu获取raw型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
+ * @brief  mcu获取raw型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
  * @param[out] {value} raw 数据缓冲区地址
  * @param[out] {out_len} raw 数据长度
- * @return 当前dp值
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned char mcu_get_dp_download_raw(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len);
+unsigned char mcu_get_tsl_download_raw(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len);
 
 /**
- * @brief  mcu获取bool型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
- * @return 当前dp值
+ * @brief  mcu获取bool型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned char mcu_get_dp_download_bool(const unsigned char value[],unsigned short len);
+unsigned char mcu_get_tsl_download_bool(const unsigned char value[],unsigned short len);
 /**
- * @brief  mcu获取value型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
- * @return 当前dp值
+ * @brief  mcu获取value型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned long mcu_get_dp_download_value(const unsigned char value[],unsigned short len);
+unsigned long mcu_get_tsl_download_value(const unsigned char value[],unsigned short len);
 
 /**
- * @brief  mcu获取string型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
+ * @brief  mcu获取string型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
  * @param[out] {value} string 数据缓冲区地址
  * @param[out] {out_len} string 数据长度
- * @return 当前dp值
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned char mcu_get_dp_download_string(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len);
+unsigned char mcu_get_tsl_download_string(const unsigned char value[],unsigned short len, unsigned char *out, unsigned short *out_len);
 
 /**
- * @brief  mcu获取fault型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
- * @return 当前dp值
+ * @brief  mcu获取fault型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
+ * @return 当前tsl值
  * @note   Null
  */
-unsigned long mcu_get_dp_download_fault(const unsigned char value[],unsigned short len);
+unsigned long mcu_get_tsl_download_fault(const unsigned char value[],unsigned short len);
 
 /**
- * @brief  mcu获取double型下发dp值
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {len} dp数据长度
- * @return 当前dp值
+ * @brief  mcu获取double型下发tsl值
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {len} tsl数据长度
+ * @return 当前tsl值
  * @note   Null
  */
-double mcu_get_dp_download_double(const unsigned char value[],unsigned short len);
+double mcu_get_tsl_download_double(const unsigned char value[],unsigned short len);
 
-int mcu_dp_struct_parser(mcu_dp_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
+int mcu_tsl_struct_parser(mcu_tsl_struct_t *st, unsigned char *buffer, unsigned short buffer_len);
 
-int mcu_dp_struct_get_item(mcu_dp_struct_t *st, unsigned short *dpid, unsigned char *type, unsigned char *value, unsigned short *len);
+int mcu_tsl_struct_get_item(mcu_tsl_struct_t *st, unsigned short *tslid, unsigned char *type, unsigned char *value, unsigned short *len);
 
 /**
  * @brief  串口接收数据暂存处理

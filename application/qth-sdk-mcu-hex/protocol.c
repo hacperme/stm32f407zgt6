@@ -19,19 +19,19 @@
 ******************************************************************************/
 
 /******************************************************************************
-                        1:dp数据点序列类型对照表
+                        1:tsl数据点序列类型对照表
                         **请和平台所设置的保持一致**         
 ******************************************************************************/
 // #error "请将功能点ID与类型的匹配关系和平台上设置的保持一致,并删除该行"
 const DOWNLOAD_CMD_S download_cmd[] =
 {
-//   {DPID_TEST_RAW, DP_TYPE_RAW},
-  {DPID_TEST_BOOL, DP_TYPE_BOOL},
-  {DPID_TEST_VALUE, DP_TYPE_VALUE},
-  {DPID_TEST_FAULT,DP_TYPE_BITMAP},
-  {DPID_TEST_STRUCT,DP_TYPE_STRUCT},
-  {DPID_TEST_STRING,DP_TYPE_STRING},
-  {DPID_TEST_DOUBLE,DP_TYPE_DOUBLE},
+//   {TSLID_TEST_RAW, TSL_TYPE_RAW},
+  {TSLID_TEST_BOOL, TSL_TYPE_BOOL},
+  {TSLID_TEST_VALUE, TSL_TYPE_VALUE},
+  {TSLID_TEST_FAULT,TSL_TYPE_BITMAP},
+  {TSLID_TEST_STRUCT,TSL_TYPE_STRUCT},
+  {TSLID_TEST_STRING,TSL_TYPE_STRING},
+  {TSLID_TEST_DOUBLE,TSL_TYPE_DOUBLE},
 };
 
 
@@ -79,7 +79,7 @@ void uart_transmit_output(unsigned char value)
 
 
 /**
- * @brief  系统所有dp点信息上传,实现APP和muc数据同步
+ * @brief  系统所有tsl点信息上传,实现APP和muc数据同步
  * @param  Null
  * @return Null
  * @note   此函数SDK内部需调用，MCU必须实现该函数内数据上报功能，包括只上报和可上报可下发型数据
@@ -89,24 +89,24 @@ void all_data_update(void)
     // #error "请在此处理可下发可上报数据及只上报数据示例,处理完成后删除该行"
     
     //请按照实际数据修改每个可下发可上报函数和只上报函数
-    mcu_dp_bool_update(DPID_TEST_BOOL,0); //BOOL型数据上报;
-    mcu_dp_value_update(DPID_TEST_VALUE,12); //VALUE型数据上报;
-    mcu_dp_fault_update(DPID_TEST_FAULT, 0x03);//故障型数据上报;
-    mcu_dp_string_update(DPID_TEST_STRING, (const unsigned char *)"test_string", strlen("test_string")); //STRING型数据上报;
-    mcu_dp_double_update(DPID_TEST_DOUBLE, 12.34); //DOUBLE型数据上报;
+    mcu_tsl_bool_update(TSLID_TEST_BOOL,0); //BOOL型数据上报;
+    mcu_tsl_value_update(TSLID_TEST_VALUE,12); //VALUE型数据上报;
+    mcu_tsl_fault_update(TSLID_TEST_FAULT, 0x03);//故障型数据上报;
+    mcu_tsl_string_update(TSLID_TEST_STRING, (const unsigned char *)"test_string", strlen("test_string")); //STRING型数据上报;
+    mcu_tsl_double_update(TSLID_TEST_DOUBLE, 12.34); //DOUBLE型数据上报;
 
-    mcu_dp_struct_t st = {0};
+    mcu_tsl_struct_t st = {0};
     unsigned char buf[200] = {0};
-    mcu_dp_struct_init(DPID_TEST_STRUCT, &st, buf, sizeof(buf));
+    mcu_tsl_struct_init(TSLID_TEST_STRUCT, &st, buf, sizeof(buf));
     int test_value = 123;
-    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_VALUE, &st, DP_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value));
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_VALUE, &st, TSL_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value));
     unsigned char test_bool = 1;
-    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_BOOL, &st, DP_TYPE_BOOL, &test_bool, sizeof(test_bool));
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_BOOL, &st, TSL_TYPE_BOOL, &test_bool, sizeof(test_bool));
     unsigned char test_string[] = "substring";
-    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_STRING, &st, DP_TYPE_STRING, test_string, strlen((const char *)test_string));
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st, TSL_TYPE_STRING, test_string, strlen((const char *)test_string));
     double test_double = 22.34;
-    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_DOUBLE, &st, DP_TYPE_DOUBLE, (unsigned char *)&test_double, sizeof(test_double));
-    mcu_dp_struct_update(&st); //结构体型数据上报;
+    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_DOUBLE, &st, TSL_TYPE_DOUBLE, (unsigned char *)&test_double, sizeof(test_double));
+    mcu_tsl_struct_update(&st); //结构体型数据上报;
 
 }
 
@@ -117,21 +117,21 @@ void all_data_update(void)
                             具体请用户自行实现数据处理
 ******************************************************************************/
 /*****************************************************************************
-函数名称 : dp_download_test_bool_handle
-功能描述 : 针对DPID_TEST_BOOL的处理函数
+函数名称 : tsl_download_test_bool_handle
+功能描述 : 针对TSLID_TEST_BOOL的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char dp_download_test_bool_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_test_bool_handle(const unsigned char value[], unsigned short length)
 {
-    //示例:当前DP类型为BOOL
+    //示例:当前tsl类型为BOOL
     unsigned char ret;
     //0:off/1:on
     unsigned char bool_value;
     
-    bool_value = mcu_get_dp_download_bool(value,length);
+    bool_value = mcu_get_tsl_download_bool(value,length);
     if(bool_value == 0) {
         //bool off
         printf("set off\r\n");
@@ -139,8 +139,8 @@ static unsigned char dp_download_test_bool_handle(const unsigned char value[], u
         printf("set on\r\n");
     }
   
-    //There should be a report after processing the DP
-    ret = mcu_dp_bool_update(DPID_TEST_BOOL,bool_value);
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_bool_update(TSLID_TEST_BOOL,bool_value);
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -148,20 +148,20 @@ static unsigned char dp_download_test_bool_handle(const unsigned char value[], u
 }
 
 /*****************************************************************************
-函数名称 : dp_download_test_value_handle
-功能描述 : 针对DPID_TEST_VALUE的处理函数
+函数名称 : tsl_download_test_value_handle
+功能描述 : 针对TSLID_TEST_VALUE的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char dp_download_test_value_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_test_value_handle(const unsigned char value[], unsigned short length)
 {
-    //示例:当前DP类型为VALUE
+    //示例:当前tsl类型为VALUE
     unsigned char ret = SUCCESS;
     unsigned long int_value;
     
-    int_value = mcu_get_dp_download_value(value,length);
+    int_value = mcu_get_tsl_download_value(value,length);
     /*
     //VALUE type data processing
     
@@ -169,8 +169,8 @@ static unsigned char dp_download_test_value_handle(const unsigned char value[], 
 
     printf("set int_value:%ld\r\n", int_value);
     
-    //There should be a report after processing the DP
-    ret = mcu_dp_value_update(DPID_TEST_VALUE,int_value);
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_TEST_VALUE,int_value);
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -178,27 +178,27 @@ static unsigned char dp_download_test_value_handle(const unsigned char value[], 
 }
 
 /*****************************************************************************
-函数名称 : dp_download_test_string_handle
-功能描述 : 针对DPID_TEST_STRING的处理函数
+函数名称 : tsl_download_test_string_handle
+功能描述 : 针对TSLID_TEST_STRING的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char dp_download_test_string_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_test_string_handle(const unsigned char value[], unsigned short length)
 {
-    //示例:当前DP类型为STRING
+    //示例:当前tsl类型为STRING
     unsigned char ret = SUCCESS;
     unsigned char string_value[100] = {0};
     unsigned short string_len = 0;
     
-    mcu_get_dp_download_string(value,length,string_value, &string_len);
+    mcu_get_tsl_download_string(value,length,string_value, &string_len);
 
 
     printf("set string_value:%s\r\n", string_value);
     
-    //There should be a report after processing the DP
-    ret = mcu_dp_string_update(DPID_TEST_STRING,string_value,strlen((const char *)string_value));
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_string_update(TSLID_TEST_STRING,string_value,strlen((const char *)string_value));
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -207,26 +207,26 @@ static unsigned char dp_download_test_string_handle(const unsigned char value[],
 
 
 /*****************************************************************************
-函数名称 : dp_download_test_fault_handle
-功能描述 : 针对DPID_TEST_FAULT的处理函数
+函数名称 : tsl_download_test_fault_handle
+功能描述 : 针对TSLID_TEST_FAULT的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char dp_download_test_fault_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_test_fault_handle(const unsigned char value[], unsigned short length)
 {
-    //示例:当前DP类型为ENUM
+    //示例:当前tsl类型为ENUM
     unsigned char ret = SUCCESS;
     unsigned long enum_value;
     
-    enum_value = mcu_get_dp_download_fault(value,length);
+    enum_value = mcu_get_tsl_download_fault(value,length);
 
     
     printf("set fault_value:0x%0ld\r\n", enum_value);
     
-    //There should be a report after processing the DP
-    ret = mcu_dp_fault_update(DPID_TEST_FAULT,enum_value);
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_fault_update(TSLID_TEST_FAULT,enum_value);
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -235,26 +235,26 @@ static unsigned char dp_download_test_fault_handle(const unsigned char value[], 
 
 
 /*****************************************************************************
-函数名称 : dp_download_test_double_handle
-功能描述 : 针对DPID_TEST_DOUBLE的处理函数
+函数名称 : tsl_download_test_double_handle
+功能描述 : 针对TSLID_TEST_DOUBLE的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char dp_download_test_double_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_test_double_handle(const unsigned char value[], unsigned short length)
 {
-    //示例:当前DP类型为DOUBLE
+    //示例:当前tsl类型为DOUBLE
     unsigned char ret = SUCCESS;
     double double_value;
     
-    double_value = mcu_get_dp_download_double(value,length);
+    double_value = mcu_get_tsl_download_double(value,length);
 
     
     printf("set double_value:%f\r\n", double_value);
     
-    //There should be a report after processing the DP
-    ret = mcu_dp_double_update(DPID_TEST_DOUBLE,double_value);
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_double_update(TSLID_TEST_DOUBLE,double_value);
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -264,23 +264,23 @@ static unsigned char dp_download_test_double_handle(const unsigned char value[],
 
 
 /*****************************************************************************
-函数名称 : dp_download_test_struct_handle
-功能描述 : 针对DPID_TEST_STRUCT的处理函数
+函数名称 : tsl_download_test_struct_handle
+功能描述 : 针对TSLID_TEST_STRUCT的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char dp_download_test_struct_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_test_struct_handle(const unsigned char value[], unsigned short length)
 {
-    // 示例:当前DP类型为STRUCT
+    // 示例:当前tsl类型为STRUCT
     unsigned char ret = SUCCESS;
 
-    mcu_dp_struct_t st = {0};
-    unsigned short dpid;
-    unsigned char dp_type;
-    unsigned char dp_value[100] = {0};
-    unsigned short dp_length = 0;
+    mcu_tsl_struct_t st = {0};
+    unsigned short tslid;
+    unsigned char tsl_type;
+    unsigned char tsl_value[100] = {0};
+    unsigned short tsl_length = 0;
 
     unsigned long int_value;
     unsigned char bool_value;
@@ -288,28 +288,28 @@ static unsigned char dp_download_test_struct_handle(const unsigned char value[],
     unsigned char string_value[100] = {0};
     unsigned short string_len = 0;
 
-    mcu_dp_struct_t st_send = {0};
+    mcu_tsl_struct_t st_send = {0};
     unsigned char buf[200] = {0};
-    mcu_dp_struct_init(DPID_TEST_STRUCT, &st_send, buf, sizeof(buf));
+    mcu_tsl_struct_init(TSLID_TEST_STRUCT, &st_send, buf, sizeof(buf));
 
-    mcu_dp_struct_parser(&st, (unsigned char *)value, length);
+    mcu_tsl_struct_parser(&st, (unsigned char *)value, length);
 
-    while (mcu_dp_struct_get_item(&st, &dpid, &dp_type, dp_value, &dp_length))
+    while (mcu_tsl_struct_get_item(&st, &tslid, &tsl_type, tsl_value, &tsl_length))
     {
-        switch (dpid)
+        switch (tslid)
         {
-        case DPID_TEST_STRUCT_SUB_VALUE:
+        case TSLID_TEST_STRUCT_SUB_VALUE:
         {
 
-            int_value = mcu_get_dp_download_value(dp_value, dp_length);
+            int_value = mcu_get_tsl_download_value(tsl_value, tsl_length);
             printf("set sub int_value:%ld\r\n", int_value);
-            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_VALUE, &st_send, DP_TYPE_VALUE, (unsigned char *)&int_value, sizeof(int_value));
+            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_VALUE, &st_send, TSL_TYPE_VALUE, (unsigned char *)&int_value, sizeof(int_value));
         }
         break;
-        case DPID_TEST_STRUCT_SUB_BOOL:
+        case TSLID_TEST_STRUCT_SUB_BOOL:
         {
 
-            bool_value = mcu_get_dp_download_bool(value, length);
+            bool_value = mcu_get_tsl_download_bool(value, length);
             if (bool_value == 0)
             {
                 printf("set sub bool off\r\n");
@@ -318,26 +318,26 @@ static unsigned char dp_download_test_struct_handle(const unsigned char value[],
             {
                 printf("set sub bool on\r\n");
             }
-            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_BOOL, &st_send, DP_TYPE_BOOL, (unsigned char *)&bool_value, sizeof(bool_value));
+            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_BOOL, &st_send, TSL_TYPE_BOOL, (unsigned char *)&bool_value, sizeof(bool_value));
         }
         break;
 
-        case DPID_TEST_STRUCT_SUB_DOUBLE:
+        case TSLID_TEST_STRUCT_SUB_DOUBLE:
         {
 
-            double_value = mcu_get_dp_download_double(dp_value, dp_length);
+            double_value = mcu_get_tsl_download_double(tsl_value, tsl_length);
 
             printf("set sub double_value:%f\r\n", double_value);
-            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_DOUBLE, &st_send, DP_TYPE_DOUBLE, (unsigned char *)&double_value, sizeof(double_value));
+            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_DOUBLE, &st_send, TSL_TYPE_DOUBLE, (unsigned char *)&double_value, sizeof(double_value));
         }
         break;
-        case DPID_TEST_STRUCT_SUB_STRING:
+        case TSLID_TEST_STRUCT_SUB_STRING:
         {
 
-            mcu_get_dp_download_string(dp_value, dp_length, string_value, &string_len);
+            mcu_get_tsl_download_string(tsl_value, tsl_length, string_value, &string_len);
 
             printf("set string_value:%s\r\n", string_value);
-            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_STRING, &st_send, DP_TYPE_STRING, (unsigned char *)&string_value, strlen((const char *)string_value));
+            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st_send, TSL_TYPE_STRING, (unsigned char *)&string_value, strlen((const char *)string_value));
             break;
         }
         default:
@@ -345,9 +345,9 @@ static unsigned char dp_download_test_struct_handle(const unsigned char value[],
         }
     }
 
-    // There should be a report after processing the DP
+    // There should be a report after processing the tsl
 
-    mcu_dp_struct_update(&st_send); //结构体型数据上报;
+    mcu_tsl_struct_update(&st_send); //结构体型数据上报;
 
     if (ret == SUCCESS)
         return SUCCESS;
@@ -361,16 +361,16 @@ static unsigned char dp_download_test_struct_handle(const unsigned char value[],
 ******************************************************************************/
 
 /**
- * @brief  dp下发处理函数
- * @param[in] {dpid} dpid 序号
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {length} dp数据长度
- * @return dp处理结果
+ * @brief  tsl下发处理函数
+ * @param[in] {tslid} tslid 序号
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {length} tsl数据长度
+ * @return tsl处理结果
  * -           0(ERROR): 失败
  * -           1(SUCCESS): 成功
  * @note   该函数用户不能修改
  */
-unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[], unsigned short length)
+unsigned char tsl_download_handle(unsigned short tslid,const unsigned char value[], unsigned short length)
 {
     /*********************************
     当前函数处理可下发/可上报数据调用                    
@@ -378,36 +378,36 @@ unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[]
     完成用需要将处理结果反馈至APP端,否则APP会认为下发失败
     ***********************************/
     unsigned char ret = SUCCESS;
-    switch(dpid) {
+    switch(tslid) {
         #if 0
-        case DPID_TEST_RAW :
+        case TSLID_TEST_RAW :
             //测试RAW类型数据处理函数
-            ret = dp_download_test_raw_handle(value,length);
+            ret = tsl_download_test_raw_handle(value,length);
         break;
         #endif
-        case DPID_TEST_BOOL:
+        case TSLID_TEST_BOOL:
             //测试BOOL类型数据处理函数
-            ret = dp_download_test_bool_handle(value,length);
+            ret = tsl_download_test_bool_handle(value,length);
         break;
-        case DPID_TEST_VALUE:
+        case TSLID_TEST_VALUE:
             //测试VALUE类型数据处理函数
-            ret = dp_download_test_value_handle(value,length);
+            ret = tsl_download_test_value_handle(value,length);
         break;
-        case DPID_TEST_STRING:
+        case TSLID_TEST_STRING:
             //测试STRING类型数据处理函数
-            ret = dp_download_test_string_handle(value,length);
+            ret = tsl_download_test_string_handle(value,length);
         break;
-        case DPID_TEST_FAULT: 
+        case TSLID_TEST_FAULT: 
             //测试FAULT类型数据处理函数
-            ret = dp_download_test_fault_handle(value,length);
+            ret = tsl_download_test_fault_handle(value,length);
         break;
-        case DPID_TEST_DOUBLE:
+        case TSLID_TEST_DOUBLE:
             //测试DOUBLE类型数据处理函数
-            ret = dp_download_test_double_handle(value,length);
+            ret = tsl_download_test_double_handle(value,length);
         break;
-        case DPID_TEST_STRUCT:
+        case TSLID_TEST_STRUCT:
             //测试STRUCT类型数据处理函数
-            ret = dp_download_test_struct_handle(value,length);
+            ret = tsl_download_test_struct_handle(value,length);
         default:
         break;
     }
@@ -415,7 +415,7 @@ unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[]
 }
 
 /**
- * @brief  获取所有dp命令总和
+ * @brief  获取所有tsl命令总和
  * @param[in] Null
  * @return 下发命令总和
  * @note   该函数用户不能修改
@@ -428,7 +428,7 @@ unsigned char get_download_cmd_total(void)
 
 /******************************************************************************
                                 WARNING!!!                     
-此代码为SDK内部调用,请按照实际dp数据实现函数内部数据
+此代码为SDK内部调用,请按照实际tsl数据实现函数内部数据
 ******************************************************************************/
 
 #ifdef SUPPORT_MCU_FIRM_UPDATE
@@ -557,7 +557,7 @@ void wifi_test_result(unsigned char result,unsigned char rssi)
 #endif
 
 
-#ifdef MCU_DP_UPLOAD_SYN
+#ifdef MCU_TSL_UPLOAD_SYN
 /**
  * @brief  状态同步上报结果
  * @param[in] {result} 结果
