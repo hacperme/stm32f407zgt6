@@ -174,6 +174,16 @@ int mcu_tsl_struct_init(unsigned short tslid, mcu_tsl_struct_t *st, unsigned cha
  */
 int mcu_tsl_struct_add_item(unsigned short tslid, mcu_tsl_struct_t *st, unsigned char type, unsigned char *value, unsigned short len);
 
+
+/**
+ * @brief  往数组中添加结构体类型数据
+ * @param[in] {dst} 数组变量地址
+ * @param[in] {src} 结构体变量指针
+ * @return Null
+ * @note   Null
+ */
+int mcu_tsl_struct_add_struct(mcu_tsl_struct_t *dst,mcu_tsl_struct_t *src);
+
 /**
  * @brief  struct/arrary型tsl数据上传
  * @param[in] {st} 结构体变量指针

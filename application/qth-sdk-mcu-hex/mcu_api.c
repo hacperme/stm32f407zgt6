@@ -400,6 +400,38 @@ unsigned char mcu_tsl_struct_update(mcu_tsl_struct_t *st)
 
 
 /**
+ * @brief  往数组中添加结构体类型数据
+ * @param[in] {dst} 数组变量地址
+ * @param[in] {src} 结构体变量指针
+ * @return Null
+ * @note   Null
+ */
+int mcu_tsl_struct_add_struct(mcu_tsl_struct_t *dst, mcu_tsl_struct_t *src)
+{
+    if (dst == NULL || src == NULL)
+    {
+        return ERROR;
+    }
+
+    if (stop_update_flag == ENABLE)
+        return SUCCESS;
+
+    if (dst->offset + src->offset > dst->buffer_len)
+    {
+        return ERROR;
+    }
+
+    my_memcpy(&dst->buffer[dst->offset], src->buffer, src->offset);
+    dst->offset += src->offset;
+    dst->value_len += src->offset;
+
+    // 更新总长度
+    dst->buffer[3] = dst->value_len / 0x100;
+    dst->buffer[4] = dst->value_len % 0x100;
+    return SUCCESS;
+}
+
+/**
  * @brief  struct/arrary型tsl数据点初始化
  * @param[in] {void} 无
  * @return 无
