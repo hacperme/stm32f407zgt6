@@ -412,6 +412,7 @@ int mcu_tsl_struct_init(unsigned short tslid, mcu_tsl_struct_t *st, unsigned cha
     st->buffer = buffer;
     st->buffer_len = buffer_len;
     st->offset = 0;
+    st->value_len = 0;
 
     st->buffer[st->offset++] = (tslid >> 8);
     st->buffer[st->offset++] = (tslid & 0xff);
