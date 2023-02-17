@@ -1,6 +1,7 @@
 #ifndef __PROTOCOL_H_
 #define __PROTOCOL_H_
 
+#include <stdbool.h>
 
 /******************************************************************************
                            用户相关信息配置
@@ -8,7 +9,7 @@
 /******************************************************************************
                        1:修改产品信息
 ******************************************************************************/
-#define PK_PS "p11nUJ_MGo3dldUT3NQcC8w"    //在开发者中心创建产品生成的生成的产品唯一标识和对应的密钥，两者通过下划线连接
+#define PK_PS "p11pit_OFd2S2tFanlab0lq"    //在开发者中心创建产品生成的生成的产品唯一标识和对应的密钥，两者通过下划线连接
 
 #define MCU_VER "1.0.0"         //用户的软件版本,用于MCU固件升级,MCU升级版本需修改
 
@@ -86,51 +87,337 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
 ******************************************************************************/
 // #error "请将功能点ID与平台上设置的保持一致,并删除该行"
 
-//RAW类型物模型功能ID
-//备注:
-// #define TSLID_TEST_RAW 4
 
-//BOOL类型物模型功能ID
-//备注:
-#define TSLID_TEST_BOOL 1
-
-//INT类型物模型功能ID
-//备注：
-#define TSLID_TEST_VALUE 3
-
-//STRING 类型物模型功能ID
-//备注:
-#define TSLID_TEST_STRING 5
-
-//FAULT类型(特殊结构的物模型)功能ID
-//备注:
-#define TSLID_TEST_FAULT 6
-
-//DOUBLE 类型物模型功能ID
-//备注:
-#define TSLID_TEST_DOUBLE 7
-
-//STRUCT 类型物模型功能ID
-//备注:
-#define TSLID_TEST_STRUCT 2
-
-#if defined(TSLID_TEST_STRUCT)
-//STRUCT 类型的成员RAW物模型功能ID
-//备注:
-// #define TSLID_TEST_STRUCT_SUB_RAW 5
-//STRUCT 类型的成员BOOL物模型功能ID
-//备注:
-#define TSLID_TEST_STRUCT_SUB_BOOL 1
-//STRUCT 类型的成员VALUE物模型功能ID
-//备注:
-#define TSLID_TEST_STRUCT_SUB_VALUE 2
-//STRUCT 类型的成员DOUBLE物模型功能ID
-//备注:
-#define TSLID_TEST_STRUCT_SUB_DOUBLE 3
-//STRUCT 类型的成员STRING物模型功能ID
-//备注:
-#define TSLID_TEST_STRUCT_SUB_STRING 4
+// 电池电量
+#define TSLID_BATTERY_PERCENTAGE_INT 1
+// 剩余可用时长
+#define TSLID_REMAIN_TIME_INT 2
+// 剩余充电时长
+#define TSLID_REMAIN_CHARGING_TIME_INT 3
+// 总输入功率
+#define TSLID_TOTAL_INPUT_POWER_INT 4
+// 总输出功率
+#define TSLID_TOTAL_OUTPUT_POWER_INT 5
+// 恢复默认出厂
+#define TSLID_FACTORY_DEFAULT_INT 6
+// AC_信息
+#define TSLID_AC_INFO_STRUCT 7
+#if defined(TSLID_AC_INFO_STRUCT)
+     // AC开关
+     #define TSLID_AC_INFO_STRUCT_AC_SWITCH_BOOL 1
+     // AC1输出功率
+     #define TSLID_AC_INFO_STRUCT_AC1_OUTPUT_INT 2
+     // AC1输出电压
+     #define TSLID_AC_INFO_STRUCT_AC1_OUTPUT_VOLTAGE_INT 3
+     // AC1输出电流
+     #define TSLID_AC_INFO_STRUCT_AC1_OUTPUT_CURRENT_INT 4
+     // AC2输出功率
+     #define TSLID_AC_INFO_STRUCT_AC2_OUTPUT_INT 5
+     // AC2输出电压
+     #define TSLID_AC_INFO_STRUCT_AC2_OUTPUT_VOLTAGE_INT 6
+     // AC2输出电流
+     #define TSLID_AC_INFO_STRUCT_AC2_OUTPUT_CURRENT_INT 7
 #endif
+// LED指示灯状态
+#define TSLID_LED_STATUS_INT 9
+// USB信息
+#define TSLID_USB_DATA_STRUCT 13
+#if defined(TSLID_USB_DATA_STRUCT)
+     // USB开关
+     #define TSLID_USB_DATA_STRUCT_USB_SWITCH_BOOL 1
+     // USB1输出功率
+     #define TSLID_USB_DATA_STRUCT_USB1_OUTPUT_INT 2
+     // USB1输出电压
+     #define TSLID_USB_DATA_STRUCT_USB1_OUTPUT_VOLTAGE_INT 3
+     // USB1输出电流
+     #define TSLID_USB_DATA_STRUCT_USB1_OUTPUT_CURRENT_INT 4
+     // USB2输出功率
+     #define TSLID_USB_DATA_STRUCT_USB2_OUTPUT_INT 5
+     // USB2输出电压
+     #define TSLID_USB_DATA_STRUCT_USB2_OUTPUT_VOLTAGE_INT 6
+     // USB2输出电流
+     #define TSLID_USB_DATA_STRUCT_USB2_OUTPUT_CURRENT_INT 7
+     // USB3输出功率
+     #define TSLID_USB_DATA_STRUCT_USB3_OUTPUT_INT 8
+     // USB3输出电压
+     #define TSLID_USB_DATA_STRUCT_USB3_OUTPUT_VOLTAGE_INT 9
+     // USB3输出电流
+     #define TSLID_USB_DATA_STRUCT_USB3_OUTPUT_CURRENT_INT 10
+     // USB4输出功率
+     #define TSLID_USB_DATA_STRUCT_USB4_OUTPUT_INT 11
+     // USB4输出电压
+     #define TSLID_USB_DATA_STRUCT_USB4_OUTPUT_VOLTAGE_INT 12
+     // USB4输出电流
+     #define TSLID_USB_DATA_STRUCT_USB4_OUTPUT_CURRENT_INT 13
+#endif
+// TypeC信息
+#define TSLID_TYPEC_DATA_STRUCT 17
+#if defined(TSLID_TYPEC_DATA_STRUCT)
+     // TypeC开关
+     #define TSLID_TYPEC_DATA_STRUCT_TYPEC_SWITCH_BOOL 1
+     // TypeC1 输出功率
+     #define TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_INT 2
+     // TypeC1 输出电压
+     #define TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_VOLTAGE_INT 3
+     // TypeC1 输出电流
+     #define TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_CURRENT_INT 4
+     // TypeC2 输出功率
+     #define TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_INT 5
+     // TypeC2 输出电压
+     #define TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_VOLTAGE_INT 6
+     // TypeC2 输出电流
+     #define TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_CURRENT_INT 7
+
+#endif
+// DC信息
+#define TSLID_DC_DATA_STRUCT 19
+#if defined(TSLID_DC_DATA_STRUCT)
+     // DC开关
+     #define TSLID_DC_DATA_STRUCT_DC_SWITCH_BOOL 1
+     // CAR1输出功率
+     #define TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_INT 2
+     // CAR1输出电压
+     #define TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_VOLTAGE_INT 3
+     // CAR1输出电流
+     #define TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_CURRENT_INT 4
+     // CAR2输出功率
+     #define TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_INT 5
+     // CAR2输出电压
+     #define TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_VOLTAGE_INT 6
+     // CAR2输出电流
+     #define TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_CURRENT_INT 7
+     // DC12V1输出功率
+     #define TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_INT 8
+     // DC12V1输出电压
+     #define TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_VOLTAGE_INT 9
+     // DC12V1输出电流
+     #define TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_CURRENT_INT 10
+     // DC12V2输出功率
+     #define TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_INT 11
+     // DC12V2输出电压
+     #define TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_VOLTAGE_INT 12
+     // DC12V2输出电流
+     #define TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_CURRENT_INT 13
+
+#endif
+// 设备温度
+#define TSLID_TEMP_INT 21
+// 设备状态
+#define TSLID_DEVICE_STATUS_INT 22
+// 设备开关
+#define TSLID_DEVICE_SWITCH_BOOL 23
+// AC充电输入功率
+#define TSLID_AC_INPUT_INT 24
+// DC充电输入功率
+#define TSLID_DC_INPUT_INT 25
+// USB充电输入功率
+#define TSLID_USB_INPUT_INT 26
+// 按键声音
+#define TSLID_KEY_SOUND_BOOL 28
+// 待机时间
+#define TSLID_STANDBY_TIME_INT 29
+// 息屏时间
+#define TSLID_SCREEN_TIME_INT 30
+// 蜂蜜器控制
+#define TSLID_BEEP_INT 31
+// 定时
+#define TSLID_TIMING_ARRARY 32
+#if defined(TSLID_TIMING_ARRARY) // 嵌套struct类型
+     // 时间
+     #define TSLID_TIMING_ARRARY_TIME_INT 1
+     // 执行动作
+     #define TSLID_TIMING_ARRARY_ACTION_BOOL 2
+     // 动作状态
+     #define TSLID_TIMING_ARRARY_ACTION_STATUS_BOOL 3
+#endif
+
+// 设备型号
+#define TSLID_DEVICE_MODEL_STRING 33
+
+typedef struct
+{
+     // 时间
+     int time;
+     // 执行动作
+     bool action;
+     // 动作状态
+     bool action_status;
+} cycle_timing_t;
+
+typedef struct tsl_demo_st
+{
+     // 电池电量
+     int battery_percentage;
+     // 剩余可用时长
+     int remain_time;
+     // 剩余充电时长
+     int remain_charging_time;
+     // 总输入功率
+     int total_input_power;
+     // 总输出功率
+     int total_output_power;
+     // 恢复默认出厂
+     int factory_default;
+     // AC_信息
+     struct
+     {
+          // AC开关
+          bool ac_switch;
+          // AC1输出功率
+          int ac1_output;
+
+          // AC1输出电压
+          int ac1_output_voltage;
+          // AC1输出电流
+          int ac1_output_current;
+          // AC2输出功率
+          int ac2_output;
+          // AC2输出电压
+          int ac2_output_voltage;
+          // AC2输出电流
+          int ac2_output_current;
+     } ac_info;
+
+     // LED指示灯状态
+     int led_status;
+     // USB信息
+     struct
+     {
+          // USB开关
+          bool usb_switch;
+
+          // USB1输出功率
+          int usb1_output;
+
+          // USB1输出电压
+          int usb1_output_voltage;
+
+          // USB1输出电流
+          int usb1_output_current;
+
+          // USB2输出功率
+          int usb2_output;
+
+          // USB2输出电压
+          int usb2_output_voltage;
+
+          // USB2输出电流
+          int usb2_output_current;
+
+          // USB3输出功率
+          int usb3_output;
+
+          // USB3输出电压
+          int usb3_output_voltage;
+          // USB3输出电流
+          int usb3_output_current;
+
+          // USB4输出功率
+          int usb4_output;
+
+          // USB4输出电压
+          int usb4_output_voltage;
+
+          // USB4输出电流
+          int usb4_output_current;
+
+     } usb_data;
+
+     // TypeC信息
+     struct
+     {
+          // TypeC开关
+          bool typec_switch;
+          // TypeC1输出功率
+          int typec1_output;
+          // TypeC1输出电压
+          int typec1_output_voltage;
+          // TypeC1输出电流
+          int typec1_output_current;
+          // TypeC2输出功率
+          int typec2_output;
+          // TypeC2输出电压
+          int typec2_output_voltage;
+          // TypeC2输出电流
+          int typec2_output_current;
+     } typec_data;
+     // DC信息
+
+     struct
+     {
+          // DC开关
+          bool dc_switch;
+
+          // CAR1输出功率
+          int car1_output;
+
+          // CAR1输出电压
+          int car1_output_voltage;
+
+          // CAR1输出电流
+          int car1_output_current;
+
+          // CAR2输出功率
+          int car2_output;
+
+          // CAR2输出电压
+          int car2_output_voltage;
+
+          // CAR2输出电流
+          int car2_output_current;
+
+          // DC12V1输出功率
+          int dc12v1_output;
+
+          // DC12V1输出电压
+          int dc12v1_output_voltage;
+
+          // DC12V1输出电流
+          int dc12v1_output_current;
+
+          // DC12V2输出功率
+          int dc12v2_output;
+
+          // DC12V2输出电压
+          int dc12v2_output_voltage;
+
+          // DC12V2输出电流
+          int dc12v2_output_current;
+
+     } dc_data;
+
+     // 设备温度
+     int temp;
+     // 设备状态
+     int device_status;
+
+     // 设备开关
+     bool device_switch;
+
+     // AC充电输入功率
+     int ac_input_power;
+
+     // DC充电输入功率
+     int dc_input_power;
+
+     // USB充电输入功率
+     int usb_input_power;
+
+     // 按键声音
+     bool key_sound;
+
+     // 待机时间
+     int standby_time;
+     // 息屏时间
+     int screen_time;
+     // 蜂蜜器控制
+     int beep;
+     // 定时
+     cycle_timing_t timing[10];
+
+     // 设备型号
+     char *device_model;
+} tsl_demo_t;
 
 /**
  * @brief  串口发送数据

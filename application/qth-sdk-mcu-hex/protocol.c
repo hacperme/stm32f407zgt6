@@ -22,18 +22,105 @@
                         1:tsl数据点序列类型对照表
                         **请和平台所设置的保持一致**         
 ******************************************************************************/
-// #error "请将功能点ID与类型的匹配关系和平台上设置的保持一致,并删除该行"
-const DOWNLOAD_CMD_S download_cmd[] =
-{
-//   {TSLID_TEST_RAW, TSL_TYPE_RAW},
-  {TSLID_TEST_BOOL, TSL_TYPE_BOOL},
-  {TSLID_TEST_VALUE, TSL_TYPE_VALUE},
-  {TSLID_TEST_FAULT,TSL_TYPE_BITMAP},
-  {TSLID_TEST_STRUCT,TSL_TYPE_STRUCT},
-  {TSLID_TEST_STRING,TSL_TYPE_STRING},
-  {TSLID_TEST_DOUBLE,TSL_TYPE_DOUBLE},
+
+const DOWNLOAD_CMD_S download_cmd[] = {
+    {TSLID_BATTERY_PERCENTAGE_INT, TSL_TYPE_VALUE},
+    {TSLID_REMAIN_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_REMAIN_CHARGING_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_TOTAL_INPUT_POWER_INT, TSL_TYPE_VALUE},
+    {TSLID_TOTAL_OUTPUT_POWER_INT, TSL_TYPE_VALUE},
+    {TSLID_FACTORY_DEFAULT_INT, TSL_TYPE_VALUE},
+    {TSLID_AC_INFO_STRUCT, TSL_TYPE_STRUCT},
+    {TSLID_LED_STATUS_INT, TSL_TYPE_VALUE},
+    {TSLID_USB_DATA_STRUCT, TSL_TYPE_STRUCT},
+    {TSLID_TYPEC_DATA_STRUCT, TSL_TYPE_STRUCT},
+    {TSLID_DC_DATA_STRUCT, TSL_TYPE_STRUCT},
+    {TSLID_TEMP_INT, TSL_TYPE_VALUE},
+    {TSLID_DEVICE_STATUS_INT, TSL_TYPE_VALUE},
+    {TSLID_DEVICE_SWITCH_BOOL, TSL_TYPE_BOOL},
+    {TSLID_AC_INPUT_INT, TSL_TYPE_VALUE},
+    {TSLID_DC_INPUT_INT, TSL_TYPE_VALUE},
+    {TSLID_USB_INPUT_INT, TSL_TYPE_VALUE},
+    {TSLID_KEY_SOUND_BOOL, TSL_TYPE_BOOL},
+    {TSLID_STANDBY_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_SCREEN_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_BEEP_INT, TSL_TYPE_VALUE},
+    {TSLID_TIMING_ARRARY, TSL_TYPE_STRUCT},
+    {TSLID_DEVICE_MODEL_STRING, TSL_TYPE_STRING},
 };
 
+tsl_demo_t g_tsl_demo = {
+    .battery_percentage = 50,
+    .remain_time = 140,
+    .remain_charging_time = 0,
+    .total_input_power = 149,
+    .total_output_power = 567,
+    .factory_default = 0,
+    .ac_info = {
+        .ac_switch= 1,
+        .ac1_output = 0,
+        .ac1_output_voltage = 0,
+        .ac1_output_current = 0,
+        .ac2_output = 0,
+        .ac2_output_voltage = 0,
+        .ac2_output_current = 0,
+
+    },
+    .led_status = 2,
+    .usb_data = {
+        .usb_switch = 1,
+        .usb1_output = 0,
+        .usb1_output_voltage = 0,
+        .usb1_output_current = 0,
+        .usb2_output = 49,
+        .usb2_output_voltage = 5,
+        .usb2_output_current = 10,
+        .usb3_output = 0,
+        .usb3_output_voltage = 0,
+        .usb3_output_current = 0,
+        .usb4_output = 0,
+        .usb4_output_voltage = 0,
+        .usb4_output_current = 0,
+    },
+    .typec_data = {
+        .typec_switch = 1,
+        .typec1_output = 49,
+        .typec1_output_voltage = 5,
+        .typec1_output_current = 10,
+        .typec2_output = 0,
+        .typec2_output_voltage = 0,
+        .typec2_output_current = 0,
+    },
+    .dc_data = {
+        .dc_switch = 0,
+        .car1_output = 0,
+        .car1_output_voltage = 0,
+        .car1_output_current = 0,
+        .car2_output = 0,
+        .car2_output_voltage = 0,
+        .car2_output_current = 0,
+        .dc12v1_output = 0,
+        .dc12v1_output_voltage = 0,
+        .dc12v1_output_current = 0,
+        .dc12v2_output = 0,
+        .dc12v2_output_voltage = 0,
+        .dc12v2_output_current = 0,  
+    },
+    .temp = 36,
+    .device_status = 2,
+    .device_switch = 1,
+    .ac_input_power = 0,
+    .dc_input_power = 0,
+    .usb_input_power = 0,
+    .key_sound = 1,
+    .standby_time = 5,
+    .screen_time = 5,
+    .beep = 0,
+    .timing={
+       {0},
+    },
+    .device_model = "stm32f407zgt6"
+};
 
 
 /******************************************************************************
@@ -48,17 +135,11 @@ const DOWNLOAD_CMD_S download_cmd[] =
  */
 void uart_transmit_output(unsigned char value)
 {
-    // #error "请将MCU串口发送函数填入该函数,并删除该行"
 
     extern int _write2(int fd, char *ptr, int len) ;
 
     _write2(1, (char *)&value, 1);
     
-/*
-    //Example:
-    extern void Uart_PutChar(unsigned char value);
-    Uart_PutChar(value);	                                //串口发送函数
-*/
 }
 
 /******************************************************************************
@@ -86,255 +167,175 @@ void uart_transmit_output(unsigned char value)
  */
 void all_data_update(void)
 {
-    // #error "请在此处理可下发可上报数据及只上报数据示例,处理完成后删除该行"
+    mcu_tsl_struct_t ac_info = {0};
+    unsigned char ac_info_buffer[300] = {0};
+    mcu_tsl_struct_t *usb_data = NULL;
+    unsigned char *usb_data_buffer = NULL;
+    mcu_tsl_struct_t *typec_data = NULL;
+    unsigned char *typec_data_buffer = NULL;
+    mcu_tsl_struct_t *dc_data = NULL;
+    unsigned char *dc_data_buffer = NULL;
+    mcu_tsl_struct_t *timing = NULL;
+    unsigned char *timing_buffer = NULL;
 
-    mcu_tsl_struct_t st = {0};
-    unsigned char buf[200] = {0};
-    int test_value = 123;
-    unsigned char test_bool = 1;
-    unsigned char test_string[] = "substring";
-    double test_double = 22.34;
+    mcu_tsl_struct_t timing_item = {0};
+    unsigned char timing_item_buffer[100] = {0};
 
-    // 请按照实际数据修改每个可下发可上报函数和只上报函数
-    mcu_tsl_bool_update(TSLID_TEST_BOOL, 0);                                                               // BOOL型数据上报;
-    mcu_tsl_value_update(TSLID_TEST_VALUE, 12);                                                            // VALUE型数据上报;
-    mcu_tsl_fault_update(TSLID_TEST_FAULT, 0x03);                                                          // 故障型数据上报;
-    mcu_tsl_string_update(TSLID_TEST_STRING, (const unsigned char *)"test_string", strlen("test_string")); // STRING型数据上报;
-    mcu_tsl_double_update(TSLID_TEST_DOUBLE, 12.34);                                                       // DOUBLE型数据上报;
+    mcu_tsl_value_update(TSLID_BATTERY_PERCENTAGE_INT, g_tsl_demo.battery_percentage);
+    mcu_tsl_value_update(TSLID_REMAIN_TIME_INT, g_tsl_demo.remain_time);
+    mcu_tsl_value_update(TSLID_REMAIN_CHARGING_TIME_INT, g_tsl_demo.remain_charging_time);
+    mcu_tsl_value_update(TSLID_TOTAL_INPUT_POWER_INT, g_tsl_demo.total_input_power);
+    mcu_tsl_value_update(TSLID_TOTAL_OUTPUT_POWER_INT, g_tsl_demo.total_output_power);
+    mcu_tsl_value_update(TSLID_FACTORY_DEFAULT_INT, g_tsl_demo.factory_default);
 
-    mcu_tsl_struct_init(TSLID_TEST_STRUCT, &st, buf, sizeof(buf));  // 初始化STRUCT类型
+    mcu_tsl_struct_init(TSLID_AC_INFO_STRUCT, &ac_info, ac_info_buffer, sizeof(ac_info_buffer));
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC_SWITCH_BOOL, &ac_info,
+                            TSL_TYPE_BOOL, (unsigned char *)&g_tsl_demo.ac_info.ac_switch, 1);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC1_OUTPUT_INT, &ac_info, 
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC1_OUTPUT_VOLTAGE_INT, &ac_info, 
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC1_OUTPUT_CURRENT_INT, &ac_info, 
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac1_output_current, 4);
 
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_VALUE, &st, TSL_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value)); //添加结构体成员数据
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC2_OUTPUT_INT, &ac_info, 
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC2_OUTPUT_VOLTAGE_INT, &ac_info,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC2_OUTPUT_CURRENT_INT, &ac_info,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac2_output_current, 4);
+                            
+    mcu_tsl_struct_update(&ac_info);
 
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_BOOL, &st, TSL_TYPE_BOOL, &test_bool, sizeof(test_bool));                         //添加结构体成员数据
+    usb_data = &ac_info;
+    usb_data_buffer = ac_info_buffer;
 
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st, TSL_TYPE_STRING, test_string, strlen((const char *)test_string));    //添加结构体成员数据
+    mcu_tsl_struct_init(TSLID_USB_DATA_STRUCT, usb_data, usb_data_buffer, sizeof(ac_info_buffer));
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB_SWITCH_BOOL, usb_data,
+                            TSL_TYPE_BOOL, (unsigned char *)&g_tsl_demo.usb_data.usb_switch, 1);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB1_OUTPUT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB1_OUTPUT_VOLTAGE_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB1_OUTPUT_CURRENT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb1_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB2_OUTPUT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB2_OUTPUT_VOLTAGE_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB2_OUTPUT_CURRENT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb2_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB3_OUTPUT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb3_output, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB3_OUTPUT_VOLTAGE_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb3_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB3_OUTPUT_CURRENT_INT, usb_data,                    
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb3_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB4_OUTPUT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb4_output, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB4_OUTPUT_VOLTAGE_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb4_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB4_OUTPUT_CURRENT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb4_output_current, 4);
 
-    mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_DOUBLE, &st, TSL_TYPE_DOUBLE, (unsigned char *)&test_double, sizeof(test_double));  //添加结构体成员数据
-    mcu_tsl_struct_update(&st); // 结构体型数据上报;
+    mcu_tsl_struct_update(usb_data);
+
+    typec_data = &ac_info;
+    typec_data_buffer = ac_info_buffer;
+
+    mcu_tsl_struct_init(TSLID_TYPEC_DATA_STRUCT, typec_data, typec_data_buffer, sizeof(ac_info_buffer));
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC_SWITCH_BOOL, typec_data,
+                            TSL_TYPE_BOOL, (unsigned char *)&g_tsl_demo.typec_data.typec_switch, 1);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_VOLTAGE_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_CURRENT_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec1_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_VOLTAGE_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_CURRENT_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec2_output_current, 4);
+
+    mcu_tsl_struct_update(typec_data);
+
+    dc_data = &ac_info;
+    dc_data_buffer = ac_info_buffer;
+
+    mcu_tsl_struct_init(TSLID_DC_DATA_STRUCT, dc_data, dc_data_buffer, sizeof(ac_info_buffer));
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC_SWITCH_BOOL, dc_data,
+                            TSL_TYPE_BOOL, (unsigned char *)&g_tsl_demo.dc_data.dc_switch, 1);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_VOLTAGE_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_CURRENT_INT, dc_data, TSL_TYPE_VALUE, 
+                            (unsigned char *)&g_tsl_demo.dc_data.car1_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_VOLTAGE_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_CURRENT_INT, dc_data, TSL_TYPE_VALUE, 
+                            (unsigned char *)&g_tsl_demo.dc_data.car2_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_VOLTAGE_INT, dc_data, TSL_TYPE_VALUE, 
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_CURRENT_INT, dc_data, TSL_TYPE_VALUE, 
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v1_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_VOLTAGE_INT, dc_data, TSL_TYPE_VALUE, 
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_CURRENT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v2_output_current, 4);
+
+    mcu_tsl_struct_update(dc_data);
+
+
+
+    mcu_tsl_value_update(TSLID_LED_STATUS_INT, g_tsl_demo.led_status);
+    mcu_tsl_value_update(TSLID_TEMP_INT, g_tsl_demo.temp);
+    mcu_tsl_value_update(TSLID_DEVICE_STATUS_INT, g_tsl_demo.device_status);
+    mcu_tsl_bool_update(TSLID_DEVICE_SWITCH_BOOL, (unsigned char)g_tsl_demo.device_switch);
+    mcu_tsl_value_update(TSLID_AC_INPUT_INT, g_tsl_demo.ac_input_power);
+    mcu_tsl_value_update(TSLID_DC_INPUT_INT, g_tsl_demo.dc_input_power);
+    mcu_tsl_value_update(TSLID_USB_INPUT_INT, g_tsl_demo.usb_input_power);
+    mcu_tsl_bool_update(TSLID_KEY_SOUND_BOOL, (unsigned char)g_tsl_demo.key_sound);
+    mcu_tsl_value_update(TSLID_STANDBY_TIME_INT, g_tsl_demo.standby_time);
+    mcu_tsl_value_update(TSLID_SCREEN_TIME_INT, g_tsl_demo.screen_time);
+    mcu_tsl_value_update(TSLID_BEEP_INT, g_tsl_demo.beep);
+
+    timing = &ac_info;
+    timing_buffer = ac_info_buffer;
+
+    mcu_tsl_struct_init(TSLID_TIMING_ARRARY, timing, timing_buffer, sizeof(ac_info_buffer));
+    for (size_t i = 0; i < 10; i++)
+    {
+        mcu_tsl_struct_init(0, &timing_item, timing_item_buffer, sizeof(timing_item_buffer));
+        mcu_tsl_struct_add_item(TSLID_TIMING_ARRARY_TIME_INT, &timing_item, TSL_TYPE_VALUE,
+                                (unsigned char *)&g_tsl_demo.timing[i].time, 4);
+        mcu_tsl_struct_add_item(TSLID_TIMING_ARRARY_ACTION_BOOL, &timing_item, TSL_TYPE_BOOL,
+                                (unsigned char *)&g_tsl_demo.timing[i].action, 1);
+        mcu_tsl_struct_add_item(TSLID_TIMING_ARRARY_ACTION_STATUS_BOOL, &timing_item, TSL_TYPE_BOOL,
+                                (unsigned char *)&g_tsl_demo.timing[i].action_status, 1);
+        mcu_tsl_struct_add_struct(timing, &timing_item);
+    }
+
+    mcu_tsl_struct_update(timing);
+
+    mcu_tsl_string_update(TSLID_DEVICE_MODEL_STRING,
+     (const unsigned char *)g_tsl_demo.device_model, my_strlen((unsigned char *)g_tsl_demo.device_model));
+
 }
-
 
 /******************************************************************************
                                 WARNING!!!    
                             2:所有数据上报处理
                             具体请用户自行实现数据处理
 ******************************************************************************/
-/*****************************************************************************
-函数名称 : tsl_download_test_bool_handle
-功能描述 : 针对TSLID_TEST_BOOL的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char tsl_download_test_bool_handle(const unsigned char value[], unsigned short length)
-{
-    //示例:当前tsl类型为BOOL
-    unsigned char ret;
-    //0:off/1:on
-    unsigned char bool_value;
-    
-    bool_value = mcu_get_tsl_download_bool(value,length);
-    if(bool_value == 0) {
-        //bool off
-        printf("set off\r\n");
-    }else {
-        printf("set on\r\n");
-    }
-  
-    //There should be a report after processing the tsl
-    ret = mcu_tsl_bool_update(TSLID_TEST_BOOL,bool_value);
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-
-/*****************************************************************************
-函数名称 : tsl_download_test_value_handle
-功能描述 : 针对TSLID_TEST_VALUE的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char tsl_download_test_value_handle(const unsigned char value[], unsigned short length)
-{
-    //示例:当前tsl类型为VALUE
-    unsigned char ret = SUCCESS;
-    unsigned long int_value;
-    
-    int_value = mcu_get_tsl_download_value(value,length);
-    /*
-    //VALUE type data processing
-    
-    */
-
-    printf("set int_value:%ld\r\n", int_value);
-    
-    //There should be a report after processing the tsl
-    ret = mcu_tsl_value_update(TSLID_TEST_VALUE,int_value);
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-
-/*****************************************************************************
-函数名称 : tsl_download_test_string_handle
-功能描述 : 针对TSLID_TEST_STRING的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char tsl_download_test_string_handle(const unsigned char value[], unsigned short length)
-{
-    //示例:当前tsl类型为STRING
-    unsigned char ret = SUCCESS;
-    unsigned char string_value[100] = {0};
-    unsigned short string_len = 0;
-    
-    mcu_get_tsl_download_string(value,length,string_value, &string_len);
-
-
-    printf("set string_value:%s\r\n", string_value);
-    
-    //There should be a report after processing the tsl
-    ret = mcu_tsl_string_update(TSLID_TEST_STRING,string_value,strlen((const char *)string_value));
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-
-
-
-/*****************************************************************************
-函数名称 : tsl_download_test_double_handle
-功能描述 : 针对TSLID_TEST_DOUBLE的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char tsl_download_test_double_handle(const unsigned char value[], unsigned short length)
-{
-    //示例:当前tsl类型为DOUBLE
-    unsigned char ret = SUCCESS;
-    double double_value;
-    
-    double_value = mcu_get_tsl_download_double(value,length);
-
-    
-    printf("set double_value:%f\r\n", double_value);
-    
-    //There should be a report after processing the tsl
-    ret = mcu_tsl_double_update(TSLID_TEST_DOUBLE,double_value);
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-
-
-
-/*****************************************************************************
-函数名称 : tsl_download_test_struct_handle
-功能描述 : 针对TSLID_TEST_STRUCT的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char tsl_download_test_struct_handle(const unsigned char value[], unsigned short length)
-{
-    // 示例:当前tsl类型为STRUCT
-    unsigned char ret = SUCCESS;
-
-    // 解析下发结构体数据变量定义
-    mcu_tsl_struct_t st = {0};
-    unsigned short tslid;
-    unsigned char tsl_type;
-    unsigned char tsl_value[100] = {0};
-    unsigned short tsl_length = 0;
-
-    unsigned long int_value;
-    unsigned char bool_value;
-    double double_value;
-    unsigned char string_value[100] = {0};
-    unsigned short string_len = 0;
-
-    // 回传结构体数据变量定义
-    mcu_tsl_struct_t st_send = {0};
-    unsigned char buf[200] = {0};
-    mcu_tsl_struct_init(TSLID_TEST_STRUCT, &st_send, buf, sizeof(buf));
-
-    // 解析结构体数据
-    mcu_tsl_struct_parser(&st, (unsigned char *)value, length);
-
-    // 循环迭代解析结构体的每个成员数据
-    while (mcu_tsl_struct_get_item(&st, &tslid, &tsl_type, tsl_value, &tsl_length))
-    {
-        switch (tslid)
-        {
-        case TSLID_TEST_STRUCT_SUB_VALUE:
-        {
-
-            int_value = mcu_get_tsl_download_value(tsl_value, tsl_length);
-            printf("set sub int_value:%ld\r\n", int_value);
-            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_VALUE, &st_send, TSL_TYPE_VALUE, (unsigned char *)&int_value, sizeof(int_value));
-        }
-        break;
-        case TSLID_TEST_STRUCT_SUB_BOOL:
-        {
-
-            bool_value = mcu_get_tsl_download_bool(tsl_value, tsl_length);
-            if (bool_value == 0)
-            {
-                printf("set sub bool off\r\n");
-            }
-            else
-            {
-                printf("set sub bool on\r\n");
-            }
-            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_BOOL, &st_send, TSL_TYPE_BOOL, (unsigned char *)&bool_value, sizeof(bool_value));
-        }
-        break;
-
-        case TSLID_TEST_STRUCT_SUB_DOUBLE:
-        {
-
-            double_value = mcu_get_tsl_download_double(tsl_value, tsl_length);
-
-            printf("set sub double_value:%f\r\n", double_value);
-            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_DOUBLE, &st_send, TSL_TYPE_DOUBLE, (unsigned char *)&double_value, sizeof(double_value));
-        }
-        break;
-        case TSLID_TEST_STRUCT_SUB_STRING:
-        {
-
-            mcu_get_tsl_download_string(tsl_value, tsl_length, string_value, &string_len);
-
-            printf("set string_value:%s\r\n", string_value);
-            mcu_tsl_struct_add_item(TSLID_TEST_STRUCT_SUB_STRING, &st_send, TSL_TYPE_STRING, (unsigned char *)string_value, strlen((const char *)string_value));
-            break;
-        }
-        default:
-            break;
-        }
-    }
-
-    // There should be a report after processing the tsl
-
-    mcu_tsl_struct_update(&st_send); //结构体型数据回传上报;
-
-    if (ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
 
 /******************************************************************************
                                 WARNING!!!                     
@@ -360,31 +361,6 @@ unsigned char tsl_download_handle(unsigned short tslid,const unsigned char value
     ***********************************/
     unsigned char ret = SUCCESS;
     switch(tslid) {
-        #if 0
-        case TSLID_TEST_RAW :
-            //测试RAW类型数据处理函数
-            ret = tsl_download_test_raw_handle(value,length);
-        break;
-        #endif
-        case TSLID_TEST_BOOL:
-            //测试BOOL类型数据处理函数
-            ret = tsl_download_test_bool_handle(value,length);
-        break;
-        case TSLID_TEST_VALUE:
-            //测试VALUE类型数据处理函数
-            ret = tsl_download_test_value_handle(value,length);
-        break;
-        case TSLID_TEST_STRING:
-            //测试STRING类型数据处理函数
-            ret = tsl_download_test_string_handle(value,length);
-        break;
-        case TSLID_TEST_DOUBLE:
-            //测试DOUBLE类型数据处理函数
-            ret = tsl_download_test_double_handle(value,length);
-        break;
-        case TSLID_TEST_STRUCT:
-            //测试STRUCT类型数据处理函数
-            ret = tsl_download_test_struct_handle(value,length);
         default:
         break;
     }
@@ -580,7 +556,3 @@ void mcu_get_mac(unsigned char mac[])
     }
 }
 #endif
-
-
-
-
