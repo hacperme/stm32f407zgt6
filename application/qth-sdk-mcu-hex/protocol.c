@@ -24,38 +24,40 @@
 ******************************************************************************/
 
 const DOWNLOAD_CMD_S download_cmd[] = {
-    {TSLID_BATTERY_PERCENTAGE_INT, TSL_TYPE_VALUE},
-    {TSLID_REMAIN_TIME_INT, TSL_TYPE_VALUE},
-    {TSLID_REMAIN_CHARGING_TIME_INT, TSL_TYPE_VALUE},
-    {TSLID_TOTAL_INPUT_POWER_INT, TSL_TYPE_VALUE},
-    {TSLID_TOTAL_OUTPUT_POWER_INT, TSL_TYPE_VALUE},
-    {TSLID_FACTORY_DEFAULT_INT, TSL_TYPE_VALUE},
+    // {TSLID_BATTERY_PERCENTAGE_INT, TSL_TYPE_VALUE},
+    // {TSLID_REMAIN_TIME_INT, TSL_TYPE_VALUE},
+    // {TSLID_REMAIN_CHARGING_TIME_INT, TSL_TYPE_VALUE},
+    // {TSLID_TOTAL_INPUT_POWER_INT, TSL_TYPE_VALUE},
+    // {TSLID_TOTAL_OUTPUT_POWER_INT, TSL_TYPE_VALUE},
     {TSLID_AC_INFO_STRUCT, TSL_TYPE_STRUCT},
-    {TSLID_LED_STATUS_INT, TSL_TYPE_VALUE},
     {TSLID_USB_DATA_STRUCT, TSL_TYPE_STRUCT},
     {TSLID_TYPEC_DATA_STRUCT, TSL_TYPE_STRUCT},
     {TSLID_DC_DATA_STRUCT, TSL_TYPE_STRUCT},
-    {TSLID_TEMP_INT, TSL_TYPE_VALUE},
+    {TSLID_LED_STATUS_INT, TSL_TYPE_VALUE},
+    // {TSLID_AC_INPUT_INT, TSL_TYPE_VALUE},
+    // {TSLID_DC_INPUT_INT, TSL_TYPE_VALUE},
+    // {TSLID_USB_INPUT_INT, TSL_TYPE_VALUE},
+    // {TSLID_TEMP_INT, TSL_TYPE_VALUE},
     {TSLID_DEVICE_STATUS_INT, TSL_TYPE_VALUE},
-    {TSLID_DEVICE_SWITCH_BOOL, TSL_TYPE_BOOL},
-    {TSLID_AC_INPUT_INT, TSL_TYPE_VALUE},
-    {TSLID_DC_INPUT_INT, TSL_TYPE_VALUE},
-    {TSLID_USB_INPUT_INT, TSL_TYPE_VALUE},
-    {TSLID_KEY_SOUND_BOOL, TSL_TYPE_BOOL},
     {TSLID_STANDBY_TIME_INT, TSL_TYPE_VALUE},
     {TSLID_SCREEN_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_AC_STANDBY_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_DC_STANDBY_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_AC_CHARGING_POWER_LIMIT_INT, TSL_TYPE_VALUE},
     {TSLID_BEEP_INT, TSL_TYPE_VALUE},
+    {TSLID_SCREEN_BRIGHTNESS_INT, TSL_TYPE_VALUE},
+    {TSLID_DEVICE_WORK_MODE_INT, TSL_TYPE_VALUE},
     {TSLID_TIMING_ARRARY, TSL_TYPE_STRUCT},
-    {TSLID_DEVICE_MODEL_STRING, TSL_TYPE_STRING},
+    // {TSLID_DEVICE_MODEL_STRING, TSL_TYPE_STRING},
+    // {TSLID_BLUETOOTH_MAC_STRING, TSL_TYPE_STRING},
 };
 
 tsl_demo_t g_tsl_demo = {
     .battery_percentage = 50,
     .remain_time = 140,
-    .remain_charging_time = 0,
+    .remain_charging_time = 70,
     .total_input_power = 149,
     .total_output_power = 567,
-    .factory_default = 0,
     .ac_info = {
         .ac_switch= 1,
         .ac1_output = 0,
@@ -66,7 +68,7 @@ tsl_demo_t g_tsl_demo = {
         .ac2_output_current = 0,
 
     },
-    .led_status = 2,
+    
     .usb_data = {
         .usb_switch = 1,
         .usb1_output = 0,
@@ -106,20 +108,27 @@ tsl_demo_t g_tsl_demo = {
         .dc12v2_output_voltage = 0,
         .dc12v2_output_current = 0,  
     },
-    .temp = 36,
-    .device_status = 2,
-    .device_switch = 1,
+    .led_status = 2,
     .ac_input_power = 0,
     .dc_input_power = 0,
     .usb_input_power = 0,
-    .key_sound = 1,
+    .temp = 36,
+    .device_status = 2,
+    
     .standby_time = 5,
     .screen_time = 5,
+    .ac_standby_time = 5,
+    .dc_standby_time = 5,
+    .ac_power_limit = 100,
     .beep = 0,
+    .screen_brightness = 50,
+    .device_mode = 1,
+
     .timing={
        {0},
     },
-    .device_model = "stm32f407zgt6"
+    .device_sn = "stm32f407zgt6",
+    .bluetooth_mac = "00:00:00:00:00:00",
 };
 
 
@@ -343,7 +352,6 @@ void all_data_update(void)
     mcu_tsl_value_update(TSLID_REMAIN_CHARGING_TIME_INT, g_tsl_demo.remain_charging_time);
     mcu_tsl_value_update(TSLID_TOTAL_INPUT_POWER_INT, g_tsl_demo.total_input_power);
     mcu_tsl_value_update(TSLID_TOTAL_OUTPUT_POWER_INT, g_tsl_demo.total_output_power);
-    mcu_tsl_value_update(TSLID_FACTORY_DEFAULT_INT, g_tsl_demo.factory_default);
 
     ac_info_update();
 
@@ -354,49 +362,29 @@ void all_data_update(void)
     dc_data_update();
 
     mcu_tsl_value_update(TSLID_LED_STATUS_INT, g_tsl_demo.led_status);
-    mcu_tsl_value_update(TSLID_TEMP_INT, g_tsl_demo.temp);
-    mcu_tsl_value_update(TSLID_DEVICE_STATUS_INT, g_tsl_demo.device_status);
-    mcu_tsl_bool_update(TSLID_DEVICE_SWITCH_BOOL, (unsigned char)g_tsl_demo.device_switch);
     mcu_tsl_value_update(TSLID_AC_INPUT_INT, g_tsl_demo.ac_input_power);
     mcu_tsl_value_update(TSLID_DC_INPUT_INT, g_tsl_demo.dc_input_power);
     mcu_tsl_value_update(TSLID_USB_INPUT_INT, g_tsl_demo.usb_input_power);
-    mcu_tsl_bool_update(TSLID_KEY_SOUND_BOOL, (unsigned char)g_tsl_demo.key_sound);
+    mcu_tsl_value_update(TSLID_TEMP_INT, g_tsl_demo.temp);
+    mcu_tsl_value_update(TSLID_DEVICE_STATUS_INT, g_tsl_demo.device_status);
+   
     mcu_tsl_value_update(TSLID_STANDBY_TIME_INT, g_tsl_demo.standby_time);
     mcu_tsl_value_update(TSLID_SCREEN_TIME_INT, g_tsl_demo.screen_time);
+    mcu_tsl_value_update(TSLID_AC_STANDBY_TIME_INT, g_tsl_demo.ac_standby_time);
+    mcu_tsl_value_update(TSLID_DC_STANDBY_TIME_INT, g_tsl_demo.dc_standby_time);
+    mcu_tsl_value_update(TSLID_AC_CHARGING_POWER_LIMIT_INT, g_tsl_demo.ac_power_limit);
     mcu_tsl_value_update(TSLID_BEEP_INT, g_tsl_demo.beep);
+    mcu_tsl_value_update(TSLID_SCREEN_BRIGHTNESS_INT, g_tsl_demo.screen_brightness);
+    mcu_tsl_value_update(TSLID_DEVICE_WORK_MODE_INT, g_tsl_demo.device_mode);
 
     timing_update();
 
     mcu_tsl_string_update(TSLID_DEVICE_MODEL_STRING,
-     (const unsigned char *)g_tsl_demo.device_model, my_strlen((unsigned char *)g_tsl_demo.device_model));
-
+     (const unsigned char *)g_tsl_demo.device_sn, my_strlen((unsigned char *)g_tsl_demo.device_sn));
+    mcu_tsl_string_update(TSLID_BLUETOOTH_MAC_STRING,
+     (const unsigned char *)g_tsl_demo.bluetooth_mac, my_strlen((unsigned char *)g_tsl_demo.bluetooth_mac));
 }
 
-
-/*****************************************************************************
-函数名称 : tsl_download_factory_default_int_handle
-功能描述 : 针对 TSLID_FACTORY_DEFAULT_INT 的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char tsl_download_factory_default_int_handle(const unsigned char value[], unsigned short length)
-{
-    unsigned char ret = SUCCESS;
-    
-    g_tsl_demo.factory_default = mcu_get_tsl_download_value(value,length);
-
-
-    printf("set g_tsl_demo.factory_default:%d\r\n", g_tsl_demo.factory_default);
-    
-    //There should be a report after processing the tsl
-    ret = mcu_tsl_value_update(TSLID_FACTORY_DEFAULT_INT,g_tsl_demo.factory_default);
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
 
 
 /*****************************************************************************
@@ -423,6 +411,33 @@ static unsigned char tsl_download_led_status_int_handle(const unsigned char valu
     else
         return ERROR;
 }
+
+/*****************************************************************************
+函数名称 : tsl_download_device_status_int_handle
+功能描述 : 针对 TSLID_DEVICE_STATUS_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_device_status_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.device_status = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.device_status:%d\r\n", g_tsl_demo.device_status);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_DEVICE_STATUS_INT,g_tsl_demo.device_status);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
 
 
 /*****************************************************************************
@@ -477,6 +492,81 @@ static unsigned char tsl_download_screen_time_int_handle(const unsigned char val
 }
 
 /*****************************************************************************
+函数名称 : tsl_download_ac_standby_time_int_handle
+功能描述 : 针对 TSLID_AC_STANDBY_TIME_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_ac_standby_time_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.ac_standby_time = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.ac_standby_time:%d\r\n", g_tsl_demo.ac_standby_time);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_AC_STANDBY_TIME_INT, g_tsl_demo.ac_standby_time);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+/*****************************************************************************
+函数名称 : tsl_download_dc_standby_time_int_handle
+功能描述 : 针对 TSLID_DC_STANDBY_TIME_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_dc_standby_time_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.dc_standby_time = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.dc_standby_time:%d\r\n", g_tsl_demo.dc_standby_time);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_DC_STANDBY_TIME_INT, g_tsl_demo.dc_standby_time);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+/*****************************************************************************
+函数名称 : tsl_download_ac_charging_power_limit_int_handle
+功能描述 : 针对 TSLID_AC_CHARGING_POWER_LIMIT_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_ac_charging_power_limit_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.ac_power_limit = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.ac_power_limit:%d\r\n", g_tsl_demo.ac_power_limit);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_AC_CHARGING_POWER_LIMIT_INT, g_tsl_demo.ac_power_limit);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+/*****************************************************************************
 函数名称 : tsl_download_beep_int_handle
 功能描述 : 针对 TSLID_BEEP_INT 的处理函数
 输入参数 : value:数据源数据
@@ -502,26 +592,24 @@ static unsigned char tsl_download_beep_int_handle(const unsigned char value[], u
 }
 
 /*****************************************************************************
-函数名称 : tsl_download_device_switch_bool_handle
-功能描述 : 针对 TSLID_DEVICE_SWITCH_BOOL 的处理函数
+函数名称 : tsl_download_screen_brightness_int_handle
+功能描述 : 针对 TSLID_SCREEN_BRIGHTNESS_INT 的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char tsl_download_device_switch_bool_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_screen_brightness_int_handle(const unsigned char value[], unsigned short length)
 {
-    unsigned char ret;
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.screen_brightness = mcu_get_tsl_download_value(value,length);
 
-    g_tsl_demo.device_switch = mcu_get_tsl_download_bool(value,length);
-    if(g_tsl_demo.device_switch == 0) {
-        printf("set g_tsl_demo.device_switch off\r\n");
-    }else {
-        printf("set g_tsl_demo.device_switch on\r\n");
-    }
-  
+
+    printf("set g_tsl_demo.screen_brightness:%d\r\n", g_tsl_demo.screen_brightness);
+    
     //There should be a report after processing the tsl
-    ret = mcu_tsl_bool_update(TSLID_DEVICE_SWITCH_BOOL, g_tsl_demo.device_switch);
+    ret = mcu_tsl_value_update(TSLID_SCREEN_BRIGHTNESS_INT, g_tsl_demo.screen_brightness);
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -530,34 +618,34 @@ static unsigned char tsl_download_device_switch_bool_handle(const unsigned char 
 
 
 /*****************************************************************************
-函数名称 : tsl_download_key_sound_bool_handle
-功能描述 : 针对 TSLID_KEY_SOUND_BOOL 的处理函数
+函数名称 : tsl_download_device_work_mode_int_handle
+功能描述 : 针对 TSLID_DEVICE_WORK_MODE_INT 的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char tsl_download_key_sound_bool_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_device_work_mode_int_handle(const unsigned char value[], unsigned short length)
 {
-    unsigned char ret;
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.device_mode = mcu_get_tsl_download_value(value,length);
 
-    g_tsl_demo.key_sound = mcu_get_tsl_download_bool(value, length);
-    if (g_tsl_demo.key_sound == 0)
-    {
-        printf("set g_tsl_demo.key_sound off\r\n");
-    }
-    else
-    {
-        printf("set g_tsl_demo.key_sound on\r\n");
-    }
 
-    // There should be a report after processing the tsl
-    ret = mcu_tsl_bool_update(TSLID_KEY_SOUND_BOOL, g_tsl_demo.key_sound);
-    if (ret == SUCCESS)
+    printf("set g_tsl_demo.device_mode:%d\r\n", g_tsl_demo.device_mode);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_DEVICE_WORK_MODE_INT, g_tsl_demo.device_mode);
+    if(ret == SUCCESS)
         return SUCCESS;
     else
         return ERROR;
 }
+
+
+
+
+
 
 
 /*****************************************************************************
@@ -991,17 +1079,11 @@ unsigned char tsl_download_handle(unsigned short tslid,const unsigned char value
     ***********************************/
     unsigned char ret = SUCCESS;
     switch(tslid) {
-        case TSLID_FACTORY_DEFAULT_INT:
-            ret = tsl_download_factory_default_int_handle(value, length);
-        break;
-
         case TSLID_AC_INFO_STRUCT:
             ret = tsl_download_ac_info_struct_handle(value, length);
         break;
 
-        case TSLID_LED_STATUS_INT:
-            ret = tsl_download_led_status_int_handle(value, length);
-        break;
+        
 
         case TSLID_USB_DATA_STRUCT:
             ret = tsl_download_usb_data_struct_handle(value, length);
@@ -1015,13 +1097,12 @@ unsigned char tsl_download_handle(unsigned short tslid,const unsigned char value
             ret = tsl_download_dc_data_struct_handle(value, length);
         break;
 
-        case TSLID_DEVICE_SWITCH_BOOL:
-            ret = tsl_download_device_switch_bool_handle(value, length);
+        case TSLID_LED_STATUS_INT:
+            ret = tsl_download_led_status_int_handle(value, length);
         break;
 
-        case TSLID_KEY_SOUND_BOOL:
-            ret = tsl_download_key_sound_bool_handle(value, length);
-        break;
+        case TSLID_DEVICE_STATUS_INT:
+            ret = tsl_download_device_status_int_handle(value, length);
 
         case TSLID_STANDBY_TIME_INT:
             ret = tsl_download_standby_time_int_handle(value, length);
@@ -1030,11 +1111,24 @@ unsigned char tsl_download_handle(unsigned short tslid,const unsigned char value
         case TSLID_SCREEN_TIME_INT:
             ret = tsl_download_screen_time_int_handle(value, length);
         break;
-
+        case TSLID_AC_STANDBY_TIME_INT:
+            ret = tsl_download_ac_standby_time_int_handle(value, length);
+        break;
+        case TSLID_DC_STANDBY_TIME_INT:
+            ret = tsl_download_dc_standby_time_int_handle(value, length);
+        break;
+        case TSLID_AC_CHARGING_POWER_LIMIT_INT:
+            ret = tsl_download_ac_charging_power_limit_int_handle(value, length);   
+        break;
         case TSLID_BEEP_INT:
             ret = tsl_download_beep_int_handle(value, length);
         break;
-
+        case TSLID_SCREEN_BRIGHTNESS_INT:
+            ret = tsl_download_screen_brightness_int_handle(value, length);
+        break;
+        case TSLID_DEVICE_WORK_MODE_INT:
+            ret = tsl_download_device_work_mode_int_handle(value, length);
+        break;
         case TSLID_TIMING_ARRARY:
             ret = tsl_download_timing_arrary_handle(value, length);
         break;

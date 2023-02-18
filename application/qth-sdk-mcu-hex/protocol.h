@@ -98,10 +98,8 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
 #define TSLID_TOTAL_INPUT_POWER_INT 4
 // 总输出功率
 #define TSLID_TOTAL_OUTPUT_POWER_INT 5
-// 恢复默认出厂
-#define TSLID_FACTORY_DEFAULT_INT 6
 // AC_信息
-#define TSLID_AC_INFO_STRUCT 7
+#define TSLID_AC_INFO_STRUCT 6
 #if defined(TSLID_AC_INFO_STRUCT)
      // AC开关
      #define TSLID_AC_INFO_STRUCT_AC_SWITCH_BOOL 1
@@ -118,10 +116,9 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
      // AC2输出电流
      #define TSLID_AC_INFO_STRUCT_AC2_OUTPUT_CURRENT_INT 7
 #endif
-// LED指示灯状态
-#define TSLID_LED_STATUS_INT 9
+
 // USB信息
-#define TSLID_USB_DATA_STRUCT 13
+#define TSLID_USB_DATA_STRUCT 7
 #if defined(TSLID_USB_DATA_STRUCT)
      // USB开关
      #define TSLID_USB_DATA_STRUCT_USB_SWITCH_BOOL 1
@@ -150,8 +147,9 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
      // USB4输出电流
      #define TSLID_USB_DATA_STRUCT_USB4_OUTPUT_CURRENT_INT 13
 #endif
+
 // TypeC信息
-#define TSLID_TYPEC_DATA_STRUCT 17
+#define TSLID_TYPEC_DATA_STRUCT 8
 #if defined(TSLID_TYPEC_DATA_STRUCT)
      // TypeC开关
      #define TSLID_TYPEC_DATA_STRUCT_TYPEC_SWITCH_BOOL 1
@@ -169,8 +167,9 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
      #define TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_CURRENT_INT 7
 
 #endif
+
 // DC信息
-#define TSLID_DC_DATA_STRUCT 19
+#define TSLID_DC_DATA_STRUCT 9
 #if defined(TSLID_DC_DATA_STRUCT)
      // DC开关
      #define TSLID_DC_DATA_STRUCT_DC_SWITCH_BOOL 1
@@ -200,28 +199,39 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
      #define TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_CURRENT_INT 13
 
 #endif
-// 设备温度
-#define TSLID_TEMP_INT 21
-// 设备状态
-#define TSLID_DEVICE_STATUS_INT 22
-// 设备开关
-#define TSLID_DEVICE_SWITCH_BOOL 23
+
+
+// LED指示灯状态
+#define TSLID_LED_STATUS_INT 10
 // AC充电输入功率
-#define TSLID_AC_INPUT_INT 24
+#define TSLID_AC_INPUT_INT 11
 // DC充电输入功率
-#define TSLID_DC_INPUT_INT 25
+#define TSLID_DC_INPUT_INT 12
 // USB充电输入功率
-#define TSLID_USB_INPUT_INT 26
-// 按键声音
-#define TSLID_KEY_SOUND_BOOL 28
-// 待机时间
-#define TSLID_STANDBY_TIME_INT 29
+#define TSLID_USB_INPUT_INT 13
+// 设备温度
+#define TSLID_TEMP_INT 14
+// 设备状态
+#define TSLID_DEVICE_STATUS_INT 15
+// 设备待机时间
+#define TSLID_STANDBY_TIME_INT 16
 // 息屏时间
-#define TSLID_SCREEN_TIME_INT 30
-// 蜂蜜器控制
-#define TSLID_BEEP_INT 31
-// 定时
-#define TSLID_TIMING_ARRARY 32
+#define TSLID_SCREEN_TIME_INT 17
+// 交流待机时间
+#define TSLID_AC_STANDBY_TIME_INT 18
+// 直流待机时间
+#define TSLID_DC_STANDBY_TIME_INT 19
+// AC充电功率上限
+#define TSLID_AC_CHARGING_POWER_LIMIT_INT 20
+// 蜂鸣器设置
+#define TSLID_BEEP_INT 21
+// 屏幕亮度
+#define TSLID_SCREEN_BRIGHTNESS_INT 22
+// 设备工作模式
+#define TSLID_DEVICE_WORK_MODE_INT 23
+
+// 定时开关机
+#define TSLID_TIMING_ARRARY 24
 #if defined(TSLID_TIMING_ARRARY) // 嵌套struct类型
      // 时间
      #define TSLID_TIMING_ARRARY_TIME_INT 1
@@ -231,8 +241,10 @@ mcu在wifi模块正确联网后可调用mcu_get_green_time()函数发起校时�
      #define TSLID_TIMING_ARRARY_ACTION_STATUS_BOOL 3
 #endif
 
-// 设备型号
-#define TSLID_DEVICE_MODEL_STRING 33
+// 设备序列号
+#define TSLID_DEVICE_MODEL_STRING 25
+// 蓝牙Mac地址
+#define TSLID_BLUETOOTH_MAC_STRING 26
 
 typedef struct
 {
@@ -256,8 +268,6 @@ typedef struct tsl_demo_st
      int total_input_power;
      // 总输出功率
      int total_output_power;
-     // 恢复默认出厂
-     int factory_default;
      // AC_信息
      struct
      {
@@ -265,7 +275,6 @@ typedef struct tsl_demo_st
           bool ac_switch;
           // AC1输出功率
           int ac1_output;
-
           // AC1输出电压
           int ac1_output_voltage;
           // AC1输出电流
@@ -278,8 +287,6 @@ typedef struct tsl_demo_st
           int ac2_output_current;
      } ac_info;
 
-     // LED指示灯状态
-     int led_status;
      // USB信息
      struct
      {
@@ -386,14 +393,8 @@ typedef struct tsl_demo_st
 
      } dc_data;
 
-     // 设备温度
-     int temp;
-     // 设备状态
-     int device_status;
-
-     // 设备开关
-     bool device_switch;
-
+     // LED指示灯状态
+     int led_status;
      // AC充电输入功率
      int ac_input_power;
 
@@ -402,21 +403,32 @@ typedef struct tsl_demo_st
 
      // USB充电输入功率
      int usb_input_power;
-
-     // 按键声音
-     bool key_sound;
-
-     // 待机时间
+     // 设备温度
+     int temp;
+     // 设备状态
+     int device_status;
+     // 设备待机时间
      int standby_time;
      // 息屏时间
      int screen_time;
-     // 蜂蜜器控制
+     // 交流待机时间
+     int ac_standby_time;
+     // 直流待机时间
+     int dc_standby_time;
+     // AC充电功率上限
+     int ac_power_limit;
+     // 蜂鸣器设置
      int beep;
-     // 定时
+     // 屏幕亮度
+     int screen_brightness;
+     // 设备工作模式
+     int device_mode;
+     // 定时开关机
      cycle_timing_t timing[10];
-
-     // 设备型号
-     char *device_model;
+     // 设备序列号
+     const char *device_sn;
+     // 蓝牙Mac地址
+     const char *bluetooth_mac;
 } tsl_demo_t;
 
 /**
