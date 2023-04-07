@@ -13,16 +13,41 @@
 
 #define MCU_VER "1.0.0"         //用户的软件版本,用于MCU固件升级,MCU升级版本需修改
 
-
+/******************************************************************************
+                          2:MCU是否需要支固件升级
+如需要支持MCU固件升级,请开启该宏
+MCU可调用mcu_api.c文件内的mcu_firm_update_query()函数获取当前MCU固件更新情况
+                        ********WARNING!!!**********
+当前接收缓冲区为关闭固件更新功能的大小,固件升级包可选择，默认256字节大小
+如需要开启该功能,串口接收缓冲区会变大
+******************************************************************************/
+#define         SUPPORT_MCU_FIRM_UPDATE                 //开启MCU固件升级功能(默认关闭)
+/*  Firmware package size selection  */
+#ifdef SUPPORT_MCU_FIRM_UPDATE
+// #define PACKAGE_SIZE                   0        //包大小为256字节
+#define PACKAGE_SIZE                   1        //包大小为512字节
+//#define PACKAGE_SIZE                   2        //包大小为1024字节
+#endif
 
 /******************************************************************************
                          3:定义收发缓存:
                     如当前使用MCU的RAM不够,可修改为24
 ******************************************************************************/
+#ifndef SUPPORT_MCU_FIRM_UPDATE
 
 #define WIFI_UART_RECV_BUF_LMT          1024              //串口数据接收缓存区大小,如MCU的RAM不够,可缩小
 #define WIFI_DATA_PROCESS_LMT           1024              //串口数据处理缓存区大小,根据用户TSL数据大小量定,必须大于24
 
+#else
+
+#define WIFI_UART_RECV_BUF_LMT          1024             //串口数据接收缓存区大小,如MCU的RAM不够,可缩小
+
+//请在此处选择合适的串口数据处理缓存大小（根据上面MCU固件升级包选择的大小选择开启多大的缓存）
+#define WIFI_DATA_PROCESS_LMT           1024             //串口数据处理缓存大小,如需MCU固件升级,若单包大小选择256,则缓存必须大于260
+//#define WIFI_DATA_PROCESS_LMT           600             //串口数据处理缓存大小,如需MCU固件升级,若单包大小选择512,则缓存必须大于520
+//#define WIFI_DATA_PROCESS_LMT           1200            //串口数据处理缓存大小,如需MCU固件升级,若单包大小选择1024,则缓存必须大于1030
+
+#endif
 
 #define WIFIR_UART_SEND_BUF_LMT         1024              //根据用户需要发送的物模型数据大小量定,必须大于48
 
@@ -465,6 +490,29 @@ unsigned char tsl_download_handle(unsigned short tslid,const unsigned char value
  * @note   该函数用户不能修改
  */
 unsigned char get_download_cmd_total(void);
+
+#ifdef SUPPORT_MCU_FIRM_UPDATE
+/**
+ * @brief  升级包大小选择
+ * @param[in] {package_sz} 升级包大小
+ * @ref           0x00: 256byte (默认)
+ * @ref           0x01: 512byte
+ * @ref           0x02: 1024byte
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+void upgrade_package_choose(unsigned char package_sz);
+
+/**
+ * @brief  MCU进入固件升级模式
+ * @param[in] {value} 固件缓冲区
+ * @param[in] {position} 当前数据包在于固件位置
+ * @param[in] {length} 当前固件包长度(固件包长度为0时,表示固件包发送完成)
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+unsigned char mcu_firm_update_handle(const unsigned char value[],unsigned long position,unsigned short length);
+#endif
 
 
 #ifdef SUPPORT_GREEN_TIME

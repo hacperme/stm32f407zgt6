@@ -1060,6 +1060,52 @@ static unsigned char tsl_download_timing_arrary_handle(const unsigned char value
 此部分函数用户请勿修改!!
 ******************************************************************************/
 
+#ifdef SUPPORT_MCU_FIRM_UPDATE
+/**
+ * @brief  升级包大小选择
+ * @param[in] {package_sz} 升级包大小
+ * @ref           0x00: 256byte (默认)
+ * @ref           0x01: 512byte
+ * @ref           0x02: 1024byte
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+void upgrade_package_choose(unsigned char package_sz)
+{
+    // #error "请自行实现请自行实现升级包大小选择代码,完成后请删除该行"
+    unsigned short send_len = 0;
+    send_len = set_wifi_uart_byte(send_len, package_sz);
+    wifi_uart_write_frame(UPDATE_START_CMD, MCU_TX_VER, send_len);
+}
+
+/**
+ * @brief  MCU进入固件升级模式
+ * @param[in] {value} 固件缓冲区
+ * @param[in] {position} 当前数据包在于固件位置
+ * @param[in] {length} 当前固件包长度(固件包长度为0时,表示固件包发送完成)
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+unsigned char mcu_firm_update_handle(const unsigned char value[],unsigned long position,unsigned short length)
+{
+    // #error "请自行完成MCU固件升级代码,完成后请删除该行"
+    unsigned short send_len = 0;
+    if(length == 0) {
+        //固件数据发送完成
+      
+    }else {
+        //固件数据处理
+      
+    }
+
+    //固件数据处理回复
+    send_len = set_wifi_uart_byte(send_len, 0);
+    wifi_uart_write_frame(UPDATE_TRANS_CMD, MCU_TX_VER, send_len);
+    
+    return SUCCESS;
+}
+#endif
+
 /**
  * @brief  tsl下发处理函数
  * @param[in] {tslid} tslid 序号

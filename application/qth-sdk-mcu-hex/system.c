@@ -251,10 +251,17 @@ static unsigned char data_point_handle(const unsigned char value[])
  */
 void data_handle(unsigned short offset)
 {
-
+#ifdef SUPPORT_MCU_FIRM_UPDATE
+    unsigned char *firmware_addr = NULL;
+    static unsigned short firm_size;                                            //升级包一包的大小
+    static unsigned long firm_length;                                           //MCU升级文件长度
+    static unsigned char firm_update_flag = 0;                                  //MCU升级标志
+    unsigned short tsl_len;
+    unsigned char firm_flag;                                                    //升级包大小标志
+#else
 
     unsigned short tsl_len;
-
+#endif
     unsigned char ret;
     unsigned short i,total_len;
     unsigned char cmd_type = wifi_data_process_buf[offset + FRAME_TYPE];
@@ -306,7 +313,67 @@ void data_handle(unsigned short offset)
             all_data_update();                               
         break;
     
+#ifdef SUPPORT_MCU_FIRM_UPDATE
+        case UPDATE_START_CMD:                                  //升级开始
+            //获取升级包大小全局变量
+            firm_flag = PACKAGE_SIZE;
+            if(firm_flag == 0) {
+                firm_size = 256;
+            }else if(firm_flag == 1) {
+                firm_size = 512;
+            }else if(firm_flag == 2) { 
+                firm_size = 1024;
+            }
 
+            firm_length = wifi_data_process_buf[offset + DATA_START];
+            firm_length <<= 8;
+            firm_length |= wifi_data_process_buf[offset + DATA_START + 1];
+            firm_length <<= 8;
+            firm_length |= wifi_data_process_buf[offset + DATA_START + 2];
+            firm_length <<= 8;
+            firm_length |= wifi_data_process_buf[offset + DATA_START + 3];
+            
+            upgrade_package_choose(PACKAGE_SIZE);
+            firm_update_flag = UPDATE_START_CMD;
+        break;
+    
+        case UPDATE_TRANS_CMD:                                  //升级传输
+            if(firm_update_flag == UPDATE_START_CMD) {
+                //停止一切数据上报
+                stop_update_flag = ENABLE;
+      
+                total_len = (wifi_data_process_buf[offset + LENGTH_HIGH] << 8) | wifi_data_process_buf[offset + LENGTH_LOW];
+      
+                tsl_len = wifi_data_process_buf[offset + DATA_START];
+                tsl_len <<= 8;
+                tsl_len |= wifi_data_process_buf[offset + DATA_START + 1];
+                tsl_len <<= 8;
+                tsl_len |= wifi_data_process_buf[offset + DATA_START + 2];
+                tsl_len <<= 8;
+                tsl_len |= wifi_data_process_buf[offset + DATA_START + 3];
+      
+                firmware_addr = (unsigned char *)wifi_data_process_buf;
+                firmware_addr += (offset + DATA_START + 4);
+      
+                if((total_len == 4) && (tsl_len == firm_length)) {
+                    //最后一包
+                    ret = mcu_firm_update_handle(firmware_addr,tsl_len,0);
+                    firm_update_flag = 0;
+                }else if((total_len - 4) <= firm_size) {
+                    ret = mcu_firm_update_handle(firmware_addr,tsl_len,total_len - 4);
+                }else {
+                    firm_update_flag = 0;
+                    ret = ERROR;
+                }
+      
+                if(ret == SUCCESS) {
+                    wifi_uart_write_frame(UPDATE_TRANS_CMD, MCU_TX_VER, 0);
+                }
+                //恢复一切数据上报
+                stop_update_flag = DISABLE;
+            }
+        break;
+#endif
         case GET_ONLINE_TIME_CMD:                               //获取格林时间
             mcu_get_greentime((unsigned char *)(wifi_data_process_buf + offset + DATA_START));
         break;
