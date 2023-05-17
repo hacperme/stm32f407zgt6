@@ -185,7 +185,16 @@ static void product_info_update(void)
     length = set_wifi_uart_buffer(length,(unsigned char *)PK_PS,my_strlen((unsigned char *)PK_PS));
     length = set_wifi_uart_buffer(length, (const unsigned char *)"\",\"v\":\"", my_strlen((unsigned char *)"\",\"v\":\""));
     length = set_wifi_uart_buffer(length,(unsigned char *)MCU_VER"\"",my_strlen((unsigned char *)MCU_VER"\""));
-  
+
+    length = set_wifi_uart_buffer(length, (const unsigned char *)",\"tslid\":", my_strlen((unsigned char *)",\"tslid\":"));
+    length = set_wifi_uart_buffer(length, (unsigned char *)TSL_ID_LEN, my_strlen((unsigned char *)TSL_ID_LEN));
+
+    length = set_wifi_uart_buffer(length, (const unsigned char *)",\"m\":", my_strlen((unsigned char *)",\"m\":"));
+    length = set_wifi_uart_buffer(length, (unsigned char *)WIFI_NET_CONFIG_MODE, my_strlen( (unsigned char *)WIFI_NET_CONFIG_MODE));
+
+    length = set_wifi_uart_buffer(length, (const unsigned char *)",\"mt\":", my_strlen((unsigned char *)",\"mt\":"));
+    length = set_wifi_uart_buffer(length, (unsigned char *)WIFI_MT, my_strlen( (unsigned char *)WIFI_MT));
+
     length = set_wifi_uart_buffer(length, (const unsigned char *)"}", my_strlen((unsigned char *)"}"));
     
     wifi_uart_write_frame(PRODUCT_INFO_CMD, MCU_TX_VER, length);
