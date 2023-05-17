@@ -238,12 +238,13 @@ static unsigned char data_point_handle(const unsigned char value[])
     tsl_len += value[4];
     
     index = get_dowmload_tslid_index(tsl_id);
-
-    if(tsl_type != download_cmd[index].tsl_type) {
+    
+    if(tsl_type == download_cmd[index].tsl_type || (TSL_TYPE_DOUBLE == download_cmd[index].tsl_type && TSL_TYPE_VALUE == tsl_type)) {
+        ret = tsl_download_handle(tsl_id,value + 5,tsl_len);
+        return ret;
+    }else {
         //错误提示
         return FALSE;
-    }else {
-        ret = tsl_download_handle(tsl_id,value + 5,tsl_len);
     }
     
     return ret;
@@ -265,7 +266,7 @@ void data_handle(unsigned short offset)
     static unsigned short firm_size;                                            //升级包一包的大小
     static unsigned long firm_length;                                           //MCU升级文件长度
     static unsigned char firm_update_flag = 0;                                  //MCU升级标志
-    unsigned short tsl_len;
+    unsigned long tsl_len;
     unsigned char firm_flag;                                                    //升级包大小标志
 #else
 

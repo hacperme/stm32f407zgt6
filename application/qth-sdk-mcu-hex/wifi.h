@@ -9,7 +9,10 @@
 #include "protocol.h"
 #include "system.h"
 #include "mcu_api.h"
+#include "stdint.h"
+#include "stdlib.h"
 
+#define MCU_WIFI_SDK_VER "v1.0.2"
 
 //=============================================================================
 //定义常量
@@ -63,6 +66,7 @@
 #define         WIFI_NOT_CONNECTED              0x02
 #define         WIFI_CONNECTED                  0x03
 #define         WIFI_CONN_CLOUD                 0x04
+#define         WIFI_LOW_POWER                  0x05
 #define         WIFI_SATE_UNKNOW                0xff
 
 

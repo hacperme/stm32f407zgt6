@@ -1157,7 +1157,7 @@ unsigned char mcu_firm_update_handle(const unsigned char value[],unsigned long p
     unsigned short send_len = 0;
     if(length == 0) {
         //固件数据发送完成
-      
+        /* 接受完成需要重启进入bootloader完成升级（上报新的版本），如果不重启，FC41D询问MCU版本，而MCU仍然回复历史版本，固件将会被重复下发五次 */
     }else {
         //固件数据处理
       

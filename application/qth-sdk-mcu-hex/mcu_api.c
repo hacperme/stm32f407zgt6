@@ -926,6 +926,10 @@ double mcu_get_tsl_download_double(const unsigned char value[], unsigned short l
 {
     double temp = 0;
     unsigned char *p = (unsigned char *)&temp;
+    if(len == 4)
+    {
+        return (double)((int)mcu_get_tsl_download_value(value,len));
+    }
     p[0] = value[7];
     p[1] = value[6];
     p[2] = value[5];
