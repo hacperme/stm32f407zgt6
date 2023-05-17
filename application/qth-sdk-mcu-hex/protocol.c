@@ -131,6 +131,13 @@ tsl_demo_t g_tsl_demo = {
     .bluetooth_mac = "00:00:00:00:00:00",
 };
 
+#define USE_MULTT_DATAP_UPLOAD 1
+
+#if USE_MULTT_DATAP_UPLOAD
+static mcu_tsl_datap_t g_datap = {0};
+unsigned char g_datap_buf[1024] = {0};
+#endif
+
 
 /******************************************************************************
                            2:串口单字节发送函数
@@ -189,8 +196,11 @@ unsigned char ac_info_update(void)
                             TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac2_output_voltage, 4);
     mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC2_OUTPUT_CURRENT_INT, &ac_info,
                             TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac2_output_current, 4);
-
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)&ac_info, ac_info.offset);
+#else
     return mcu_tsl_struct_update(&ac_info);
+#endif
 }
 
 unsigned char usb_data_update(void)
@@ -231,8 +241,11 @@ unsigned char usb_data_update(void)
                             TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb4_output_voltage, 4);
     mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB4_OUTPUT_CURRENT_INT, usb_data,
                             TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb4_output_current, 4);
-
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)usb_data, usb_data->offset);
+#else
     return mcu_tsl_struct_update(usb_data);
+#endif
 }
 
 unsigned char typec_data_update(void)
@@ -261,8 +274,11 @@ unsigned char typec_data_update(void)
                             TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec2_output_voltage, 4);
     mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_CURRENT_INT, typec_data,
                             TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec2_output_current, 4);
-
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)typec_data, typec_data->offset);
+#else
     return mcu_tsl_struct_update(typec_data);
+#endif
 }
 
 
@@ -304,8 +320,11 @@ unsigned char dc_data_update(void)
                             (unsigned char *)&g_tsl_demo.dc_data.dc12v2_output_voltage, 4);
     mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_CURRENT_INT, dc_data, TSL_TYPE_VALUE,
                             (unsigned char *)&g_tsl_demo.dc_data.dc12v2_output_current, 4);
-
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)dc_data, dc_data->offset);
+#else
     return mcu_tsl_struct_update(dc_data);
+#endif
 }
 
 unsigned char timing_update(void)
@@ -334,8 +353,11 @@ unsigned char timing_update(void)
                                 (unsigned char *)&g_tsl_demo.timing[i].action_status, 1);
         mcu_tsl_struct_add_struct(timing, &timing_item);
     }
-
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)timing, timing->offset);
+#else
     return mcu_tsl_struct_update(timing);
+#endif
 }
 
 
@@ -347,6 +369,47 @@ unsigned char timing_update(void)
  */
 void all_data_update(void)
 {
+
+#if USE_MULTT_DATAP_UPLOAD
+    mcu_tsl_datap_init(&g_datap, g_datap_buf, sizeof(g_datap_buf));
+
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_BATTERY_PERCENTAGE_INT, (const unsigned char *)&g_tsl_demo.battery_percentage, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_REMAIN_TIME_INT, (const unsigned char *)&g_tsl_demo.remain_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_REMAIN_CHARGING_TIME_INT, (const unsigned char *)&g_tsl_demo.remain_charging_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_TOTAL_INPUT_POWER_INT, (const unsigned char *)&g_tsl_demo.total_input_power, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_TOTAL_OUTPUT_POWER_INT, (const unsigned char *)&g_tsl_demo.total_output_power, 4);
+
+
+    ac_info_update();
+
+    usb_data_update();
+
+    typec_data_update();
+
+    dc_data_update();
+
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_LED_STATUS_INT, (const unsigned char *)&g_tsl_demo.led_status, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_AC_INPUT_INT, (const unsigned char *)&g_tsl_demo.ac_input_power, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_DC_INPUT_INT, (const unsigned char *)&g_tsl_demo.dc_input_power, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_TEMP_INT, (const unsigned char *)&g_tsl_demo.temp, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_DEVICE_STATUS_INT, (const unsigned char *)&g_tsl_demo.device_status, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_STANDBY_TIME_INT, (const unsigned char *)&g_tsl_demo.standby_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_SCREEN_TIME_INT, (const unsigned char *)&g_tsl_demo.screen_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_AC_STANDBY_TIME_INT, (const unsigned char *)&g_tsl_demo.ac_standby_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_DC_STANDBY_TIME_INT, (const unsigned char *)&g_tsl_demo.dc_standby_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_AC_CHARGING_POWER_LIMIT_INT, (const unsigned char *)&g_tsl_demo.ac_power_limit, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_BEEP_INT, (const unsigned char *)&g_tsl_demo.beep, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_SCREEN_BRIGHTNESS_INT, (const unsigned char *)&g_tsl_demo.screen_brightness, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_DEVICE_WORK_MODE_INT, (const unsigned char *)&g_tsl_demo.device_mode, 4);
+
+    timing_update();
+
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRING, TSLID_DEVICE_MODEL_STRING, (const unsigned char *)g_tsl_demo.device_sn, my_strlen((unsigned char *)g_tsl_demo.device_sn));
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRING, TSLID_BLUETOOTH_MAC_STRING, (const unsigned char *)g_tsl_demo.bluetooth_mac, my_strlen((unsigned char *)g_tsl_demo.bluetooth_mac));
+
+    mcu_tsl_datap_update(&g_datap, 0);
+
+#else
     mcu_tsl_value_update(TSLID_BATTERY_PERCENTAGE_INT, g_tsl_demo.battery_percentage);
     mcu_tsl_value_update(TSLID_REMAIN_TIME_INT, g_tsl_demo.remain_time);
     mcu_tsl_value_update(TSLID_REMAIN_CHARGING_TIME_INT, g_tsl_demo.remain_charging_time);
@@ -383,6 +446,8 @@ void all_data_update(void)
      (const unsigned char *)g_tsl_demo.device_sn, my_strlen((unsigned char *)g_tsl_demo.device_sn));
     mcu_tsl_string_update(TSLID_BLUETOOTH_MAC_STRING,
      (const unsigned char *)g_tsl_demo.bluetooth_mac, my_strlen((unsigned char *)g_tsl_demo.bluetooth_mac));
+
+#endif
 }
 
 

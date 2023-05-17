@@ -556,6 +556,152 @@ int mcu_tsl_struct_add_item(unsigned short tslid, mcu_tsl_struct_t *st, unsigned
     return SUCCESS;
 }
 
+unsigned char mcu_tsl_datap_init(mcu_tsl_datap_t *p, unsigned char *buffer, unsigned short size)
+{
+    if (p == NULL || buffer == NULL || size == 0)
+        return ERROR;
+
+    p->buffer = buffer;
+    p->buffer_len = size;
+    p->data_len = 0;
+
+    return SUCCESS;
+}
+
+unsigned char mcu_tsl_datap_add(mcu_tsl_datap_t *p, unsigned char type, unsigned short tslid,
+                                const unsigned char value[], unsigned short len)
+{
+    unsigned short data_len = 0;
+    unsigned long _tmp_vale = 0;
+    mcu_tsl_struct_t *st = NULL;
+
+    if (p == NULL || value == NULL || len == 0)
+    {
+        return ERROR;
+    }
+
+    data_len = 2 /*tsl id*/ + 1 /*type*/ + 2 /*length*/ + 4 /*value*/;
+    if (p->data_len + data_len > p->buffer_len)
+    {
+        // buffer 太小
+        return ERROR;
+    }
+
+    switch (type)
+    {
+    case TSL_TYPE_RAW:
+        p->buffer[p->data_len++] = (tslid >> 8);
+        p->buffer[p->data_len++] = (tslid & 0xff);
+        p->buffer[p->data_len++] = type;
+        p->buffer[p->data_len++] = (len >> 8);
+        p->buffer[p->data_len++] = (len & 0xff);
+        my_memcpy(&p->buffer[p->data_len], value, len);
+        p->data_len += len;
+        
+        break;
+    case TSL_TYPE_BOOL:
+        p->buffer[p->data_len++] = (tslid >> 8);
+        p->buffer[p->data_len++] = (tslid & 0xff);
+        p->buffer[p->data_len++] = type;
+        p->buffer[p->data_len++] = 0;
+        p->buffer[p->data_len++] = 1;
+        p->buffer[p->data_len++] = value[0];
+
+        break;
+    case TSL_TYPE_VALUE:
+        p->buffer[p->data_len++] = (tslid >> 8);
+        p->buffer[p->data_len++] = (tslid & 0xff);
+        p->buffer[p->data_len++] = type;
+        p->buffer[p->data_len++] = 0;
+        p->buffer[p->data_len++] = 4;
+        p->buffer[p->data_len++] = value[3];
+        p->buffer[p->data_len++] = value[2];
+        p->buffer[p->data_len++] = value[1];
+        p->buffer[p->data_len++] = value[0];
+
+        break;
+    case TSL_TYPE_STRING:
+        p->buffer[p->data_len++] = (tslid >> 8);
+        p->buffer[p->data_len++] = (tslid & 0xff);
+        p->buffer[p->data_len++] = type;
+        p->buffer[p->data_len++] = (len >> 8);
+        p->buffer[p->data_len++] = (len & 0xff);
+        my_memcpy(&p->buffer[p->data_len], value, len);
+        p->data_len += len;
+        break;
+    case TSL_TYPE_BITMAP:
+        p->buffer[p->data_len++] = (tslid >> 8);
+        p->buffer[p->data_len++] = (tslid & 0xff);
+        p->buffer[p->data_len++] = type;
+        p->buffer[p->data_len++] = 0;
+
+        _tmp_vale = *((unsigned long *)value);
+
+        if ((_tmp_vale | 0xff) == 0xff) {
+            p->buffer[p->data_len++] = 1;
+            p->buffer[p->data_len++] = _tmp_vale & 0xff;
+        } else if ((_tmp_vale | 0xffff) == 0xffff) {
+            p->buffer[p->data_len++] = 2;
+            p->buffer[p->data_len++] = _tmp_vale >> 8;
+            p->buffer[p->data_len++] = _tmp_vale & 0xff;
+        } else {
+            p->buffer[p->data_len++] = 4;
+            p->buffer[p->data_len++] = _tmp_vale >> 24;
+            p->buffer[p->data_len++] = _tmp_vale >> 16;
+            p->buffer[p->data_len++] = _tmp_vale >> 8;
+            p->buffer[p->data_len++] = _tmp_vale & 0xff;
+        }
+        break;
+    case TSL_TYPE_DOUBLE:
+        p->buffer[p->data_len++] = (tslid >> 8);
+        p->buffer[p->data_len++] = (tslid & 0xff);
+        p->buffer[p->data_len++] = type;
+        p->buffer[p->data_len++] = 0;
+        p->buffer[p->data_len++] = 8;
+        p->buffer[p->data_len++] = value[7];
+        p->buffer[p->data_len++] = value[6];
+        p->buffer[p->data_len++] = value[5];
+        p->buffer[p->data_len++] = value[4];
+        p->buffer[p->data_len++] = value[3];
+        p->buffer[p->data_len++] = value[2];
+        p->buffer[p->data_len++] = value[1];
+        p->buffer[p->data_len++] = value[0];
+
+        break;
+    case TSL_TYPE_STRUCT:
+        st = (mcu_tsl_struct_t *)value;
+        my_memcpy(&p->buffer[p->data_len], st->buffer, st->offset);
+        p->data_len += st->offset;
+        break;
+    default:
+        return ERROR;
+    }
+
+    return SUCCESS;
+}
+
+unsigned char mcu_tsl_datap_update(mcu_tsl_datap_t *p, unsigned char sync)
+{
+    unsigned short send_len = 0;
+    unsigned char cmd = STATE_UPLOAD_CMD;
+    if (p == NULL || p->buffer == NULL || p->data_len == 0)
+    {
+        return ERROR;
+    }
+
+    if (sync == 1)
+    {
+        cmd = STATE_UPLOAD_SYN_CMD;
+    }
+
+    send_len = set_wifi_uart_buffer(send_len, (unsigned char *)p->buffer, p->data_len);
+
+    wifi_uart_write_frame(cmd, MCU_TX_VER, send_len);
+
+    return SUCCESS;
+}
+
+
 int mcu_tsl_struct_parser(mcu_tsl_struct_t *st, unsigned char *buffer, unsigned short buffer_len)
 {
 

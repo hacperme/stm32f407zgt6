@@ -17,7 +17,44 @@ typedef struct
   unsigned short offset;
 }mcu_tsl_struct_t;
 
+typedef struct
+{
+  unsigned char *buffer;
+  unsigned short buffer_len;
+  unsigned short data_len;
+} mcu_tsl_datap_t;
 
+/**
+ * @brief  初始化 物模型数据节点缓存
+ * @param[in] {p} 物模型数据节点控制块
+ * @param[in] {buffer} 缓存地址
+ * @param[in] {size} 缓存大小
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_tsl_datap_init(mcu_tsl_datap_t *p, unsigned char *buffer, unsigned short size);
+
+/**
+ * @brief  添加物模型数据节点
+ * @param[in] {p} 物模型数据节点控制块
+ * @param[in] {type} 数据节点类型
+ * @param[in] {tslid} 物模型id
+ * @param[in] {value} 物模型数据地址
+ * @param[in] {value} 物模型数据大小
+ * @return Null
+ * @note  在调用此接口之前，应先对 p 使用 mcu_tsl_datap_init 初始化。
+ */
+unsigned char mcu_tsl_datap_add(mcu_tsl_datap_t *p, unsigned char type, unsigned short tslid,
+                                const unsigned char value[], unsigned short len);
+
+/**
+ * @brief  上传物模型数据节点数据
+ * @param[in] {p} 物模型数据节点控制块
+ * @param[in] {sync} 数据上传类型：0 异步上传，1 同步上传
+ * @return Null
+ * @note   Null
+ */
+unsigned char mcu_tsl_datap_update(mcu_tsl_datap_t *p, unsigned char sync);
 
 /**
  * @brief  hex转bcd
