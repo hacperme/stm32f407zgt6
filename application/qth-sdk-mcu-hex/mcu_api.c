@@ -126,6 +126,59 @@ char *my_strcpy(char *dest, const char *src)
 }
 
 /**
+ * @brief  拷贝指定长度字符串
+ * @param[in] {dest} 目标地址
+ * @param[in] {src} 源地址
+ * @param[in] {len} 长度
+ * @return 数据处理完后的源地址
+ */
+char *my_strncpy(char *dest, const char *src, unsigned int len)
+{
+    if (NULL == dest || NULL == src)
+	{
+		return NULL;
+	}
+	char *r = dest;
+	while (len-- > 0 && (*r++ = *src++) != '\0')
+		;
+	return dest;
+}
+
+/**
+ * @brief  查找字符串
+ * @param[in] {str} 要进行搜索的字符串
+ * @param[in] {subStr} 要搜索的目标字符串
+ * @return 数据处理完后的源地址
+ */
+char *my_strstr(const char *str, const char *subStr)
+{
+	if (NULL == str || NULL == subStr)
+	{
+		return NULL;
+	}
+	while (*str)
+	{
+		const char *s1 = str;
+		const char *s2 = subStr;
+		while ('\0' != *s1 && '\0' != *s2 && *s1 == *s2)
+		{
+			s1++;
+			s2++;
+		}
+		if ('\0' == *s2)
+		{
+			return (char *)str;
+		}
+		else if ('\0' == *s1)
+		{
+			return NULL;
+		}
+		str++;
+	}
+	return NULL;
+}
+
+/**
  * @brief  字符串比较
  * @param[in] {s1} 字符串 1
  * @param[in] {s2} 字符串 2
@@ -1110,6 +1163,7 @@ void mcu_reset_wifi(void)
  * -          WIFI_NOT_CONNECTED: WIFI配置成功但未连上路由器
  * -          WIFI_CONNECTED: WIFI配置成功且连上路由器
  * -          WIFI_CONN_CLOUD: WIFI已经连接上云服务器
+ * -          WIFI_LOW_POWER: 模组处于低功耗模式
  * @note   
  */
 unsigned char mcu_get_wifi_work_state(void)
@@ -1184,7 +1238,31 @@ void mcu_get_module_mac(void)
 }
 #endif
 
+/**
+ * @brief  获取当前蓝牙连接状态
+ * @param  Null
+ * @return Null
+ * @note   MCU需要自行调用该功能
+ */
+void mcu_get_ble_connect_status(void)
+{
+    unsigned short send_len = 0;
 
+    send_len = set_wifi_uart_byte(send_len, 0x05);
+    wifi_uart_write_frame(GET_BLE_STATUS_CMD, MCU_TX_VER, 1);
+}
 
+/**
+ * @brief  获取当前模组的IP地址
+ * @param  Null
+ * @return Null
+ * @note   MCU需要自行调用该功能
+ */
+void mcu_get_ip_address(void)
+{
+    unsigned short send_len = 0;
 
+    send_len = set_wifi_uart_byte(send_len, 0x01);
+    wifi_uart_write_frame(GET_IP_ADDRESS_CMD, MCU_TX_VER, 1);
+}
 

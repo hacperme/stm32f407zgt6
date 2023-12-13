@@ -1128,6 +1128,7 @@ static unsigned char tsl_download_timing_arrary_handle(const unsigned char value
 #ifdef SUPPORT_MCU_FIRM_UPDATE
 /**
  * @brief  升级包大小选择
+ * @param[in] {fr_type} 帧类型
  * @param[in] {package_sz} 升级包大小
  * @ref           0x00: 256byte (默认)
  * @ref           0x01: 512byte
@@ -1135,12 +1136,12 @@ static unsigned char tsl_download_timing_arrary_handle(const unsigned char value
  * @return Null
  * @note   MCU需要自行实现该功能
  */
-void upgrade_package_choose(unsigned char package_sz)
+void mcu_upgrade_package_choose(unsigned char fr_type, unsigned char package_sz)
 {
     // #error "请自行实现请自行实现升级包大小选择代码,完成后请删除该行"
     unsigned short send_len = 0;
     send_len = set_wifi_uart_byte(send_len, package_sz);
-    wifi_uart_write_frame(UPDATE_START_CMD, MCU_TX_VER, send_len);
+	wifi_uart_write_frame(fr_type, MCU_TX_VER, send_len);
 }
 
 /**
@@ -1151,10 +1152,10 @@ void upgrade_package_choose(unsigned char package_sz)
  * @return Null
  * @note   MCU需要自行实现该功能
  */
-unsigned char mcu_firm_update_handle(const unsigned char value[],unsigned long position,unsigned short length)
+#if 1
+unsigned char mcu_firm_update_handle(const unsigned char* module_name, const unsigned char value[],unsigned long position,unsigned short length)
 {
     // #error "请自行完成MCU固件升级代码,完成后请删除该行"
-    unsigned short send_len = 0;
     if(length == 0) {
         //固件数据发送完成
         /* 接受完成需要重启进入bootloader完成升级（上报新的版本），如果不重启，FC41D询问MCU版本，而MCU仍然回复历史版本，固件将会被重复下发五次 */
@@ -1162,13 +1163,56 @@ unsigned char mcu_firm_update_handle(const unsigned char value[],unsigned long p
         //固件数据处理
       
     }
-
-    //固件数据处理回复
-    send_len = set_wifi_uart_byte(send_len, 0);
-    wifi_uart_write_frame(UPDATE_TRANS_CMD, MCU_TX_VER, send_len);
     
     return SUCCESS;
 }
+
+#else
+// OTA示例参考代码
+unsigned char mcu_firm_update_handle(const unsigned char* module_name, const unsigned char value[],unsigned long position,unsigned short length)
+{
+    static FILE *fp = NULL;
+	static unsigned char module[32] = {0};
+
+    if(length == 0) {
+        //固件数据发送完成
+        long size = ftell(fp);
+        printf("=============================================================================Package Received OK! Total Length:%d Bytes(%d Kb)\r\n", size, size/1024);
+
+        fclose(fp);
+        fp = NULL;
+        //这里强制终止进程，客户可以校验通过后，重启进入bootloader，如果不重启，FC41D询问MCU版本，而MCU仍然回复"1.0.0"，那么会造成固件重复下发。
+        exit(0);
+    }else {
+        if(fp == NULL)
+		{
+#ifdef SUPPORT_MULTI_COMPONENT
+			if (NULL != module_name)
+			{
+				memset(module, 0, sizeof(module));
+				sprintf((char*)module, "%s.bin", module_name);
+				printf("<%s:%d>module name = %s\r\n", __FILE__, __LINE__, module);/*tips*/
+				fp = fopen((char*)module, "wb");
+			}
+			else
+#endif
+				fp = fopen("mcu_firmware.bin", "wb");
+		}
+
+        fseek(fp, position, SEEK_SET);
+        fwrite(value, length, 1, fp);
+
+        //固件数据处理
+        if(position == 0)
+        {
+            printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! This is a new Transmission !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\r\n");
+        }
+        printf("=============================================================================Frame Received Offset:%d -- length:%d\r\n", position, length);
+    }
+
+    return SUCCESS;
+}
+#endif
 #endif
 
 /**
@@ -1340,7 +1384,7 @@ void wifi_test_result(unsigned char result,unsigned char rssi)
     if(result == 0) {
         //测试失败
         if(rssi == 0x00) {
-            //未扫描到名称为tuya_mdev_test路由器,请检查
+            //未扫描到名称为quectel_mdev_test路由器,请检查
         }else if(rssi == 0x01) {
             //模块未授权
         }
@@ -1381,12 +1425,14 @@ void get_upload_syn_result(unsigned char result)
  * @ref       0x02: wifi状态 3 WIFI 已配置但未连上路由器
  * @ref       0x03: wifi状态 4 WIFI 已配置且连上路由器
  * @ref       0x04: wifi状态 5 已连上路由器且连接到云端
+ * @ref       0x05: wifi状态 6 模组处于低功耗模式
  * @return Null
  * @note   MCU需要自行实现该功能
  */
 void get_wifi_status(unsigned char result)
 {
 //   #error "请自行完成获取 WIFI 状态结果代码,并删除该行"
+    wifi_work_state = result;
     printf("result:%d\r\n", result);
 
     switch(result) {
@@ -1406,7 +1452,9 @@ void get_wifi_status(unsigned char result)
             // wifi状态 5 已连上路由器且连接到云端
         break;
         
-        
+        case 5:
+            // wifi状态 6 模组处于低功耗模式
+        break;
         
         default:break;
     }
@@ -1438,4 +1486,75 @@ void mcu_get_mac(unsigned char mac[])
         //正确接收到wifi模块返回的mac地址
     }
 }
+
+/**
+ * @brief  获取 BLE 状态结果
+ * @param[in] {result} 指示 WIFI 工作状态
+ * @ref       0x00: ble状态 1 设备未配网，蓝牙未连接
+ * @ref       0x01: ble状态 2 设备未配网，蓝牙已连接
+ * @ref       0x02: ble状态 3 设备已配网，蓝牙未连接
+ * @ref       0x03: ble状态 4 设备已配网，蓝牙已连接
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+void get_ble_status(unsigned char result)
+{
+//   #error "请自行完成获取 WIFI 状态结果代码,并删除该行"
+    ble_work_state = result;
+    printf("result:%d\r\n", result);
+
+    switch(result) {
+        case 0:
+            // ble状态 1 设备未配网，蓝牙未连接
+            break;
+
+        case 1:
+            // ble状态 2 设备未配网，蓝牙已连接
+            break;
+
+        case 2:
+            // ble状态 3 设备已配网，蓝牙未连接
+            break;
+
+        case 3:
+            // ble状态 4 设备已配网，蓝牙已连接
+            break;
+
+
+        default:break;
+    }
+}
+
+/**
+ * @brief  获取当前模组的IP地址
+ * @param[in] {ip} 模块 IP 数据
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+void get_ip_address(unsigned char ip[])
+{
+    /*
+        模组未获取到IP地址，ip[1]的值为0x00
+        模组获取到IP后，ip[1]~ip[N-1]:为当前模组的IP地址
+        N = (*(ip-2)<<8 | *(ip-1)<<0) - 1;
+    */
+    uint16_t length = ((*(ip-2)) << 8 | (*(ip-1)) << 0) - 1;
+
+    printf("IP Address Length:%d\r\n", length);
+    if(ip[1] == 0x00) {
+        printf("Get IP address error!\r\n");
+        return;
+    }else {
+#if 0
+        for(uint8_t i=1; i<=length; i++)
+            printf("i:%d -- %c\r\n", i, ip[i]);
+        printf("\r\n");
+#endif
+    }
+
+    char ip_addr_buff[32] = {0};
+    my_memcpy(ip_addr_buff, &ip[1], length);
+    printf("length:%ld -- IP:%s\r\n", my_strlen((unsigned char *)ip_addr_buff), ip_addr_buff);
+}
+
 #endif

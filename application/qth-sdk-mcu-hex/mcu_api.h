@@ -98,6 +98,23 @@ void *my_memcpy(void *dest, const void *src, unsigned short count);
 char *my_strcpy(char *dest, const char *src);
 
 /**
+ * @brief  拷贝指定长度字符串
+ * @param[in] {dest} 目标地址
+ * @param[in] {src} 源地址
+ * @param[in] {len} 长度
+ * @return 数据处理完后的源地址
+ */
+char *my_strncpy(char *dest, const char *src, unsigned int len);
+
+/**
+ * @brief  查找字符串
+ * @param[in] {str} 要进行搜索的字符串
+ * @param[in] {subStr} 要搜索的目标字符串
+ * @return 数据处理完后的源地址
+ */
+char *my_strstr(const char *str, const char *subStr);
+
+/**
  * @brief  字符串比较
  * @param[in] {s1} 字符串 1
  * @param[in] {s2} 字符串 2
@@ -392,6 +409,7 @@ void mcu_reset_wifi(void);
  * -          WIFI_NOT_CONNECTED: WIFI配置成功但未连上路由器
  * -          WIFI_CONNECTED: WIFI配置成功且连上路由器
  * -          WIFI_CONN_CLOUD: WIFI已经连接上云服务器
+ * -          WIFI_LOW_POWER: 模组处于低功耗模式
  * @note   
  */
 unsigned char mcu_get_wifi_work_state(void);
@@ -449,7 +467,20 @@ void mcu_get_wifi_connect_status(void);
 void mcu_get_module_mac(void);
 #endif
 
+/**
+ * @brief  获取当前ble连接状态
+ * @param  Null
+ * @return Null
+ * @note   MCU需要自行调用该功能
+ */
+void mcu_get_ble_connect_status(void);
 
-
+/**
+ * @brief  获取当前模组的IP地址
+ * @param  Null
+ * @return Null
+ * @note   MCU需要自行调用该功能
+ */
+void mcu_get_ip_address(void);
 
 #endif

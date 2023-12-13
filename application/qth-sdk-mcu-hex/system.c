@@ -179,12 +179,11 @@ static void heat_beat_check(void)
 static void product_info_update(void)
 {
     unsigned char length = 0;
-    // unsigned char str[10] = {0};
     
     length = set_wifi_uart_buffer(length, (const unsigned char *)"{\"p\":\"", my_strlen((unsigned char *)"{\"p\":\""));
     length = set_wifi_uart_buffer(length,(unsigned char *)PK_PS,my_strlen((unsigned char *)PK_PS));
-    length = set_wifi_uart_buffer(length, (const unsigned char *)"\",\"v\":\"", my_strlen((unsigned char *)"\",\"v\":\""));
-    length = set_wifi_uart_buffer(length,(unsigned char *)MCU_VER"\"",my_strlen((unsigned char *)MCU_VER"\""));
+
+    length = set_wifi_uart_buffer(length,(unsigned char *)MCU_VER,my_strlen((unsigned char *)MCU_VER));
 
     length = set_wifi_uart_buffer(length, (const unsigned char *)",\"tslid\":", my_strlen((unsigned char *)",\"tslid\":"));
     length = set_wifi_uart_buffer(length, (unsigned char *)TSL_ID_LEN, my_strlen((unsigned char *)TSL_ID_LEN));
@@ -246,11 +245,130 @@ static unsigned char data_point_handle(const unsigned char value[])
         //错误提示
         return FALSE;
     }
-    
-    return ret;
 }
 
+/**
+ * @brief  处理命令下发
+ * @param[in] {value} 下发数据源指针
+ * @return 返回数据处理结果
+ */
+void handle_data_query(unsigned short offset, unsigned short total_len)
+{
+    unsigned short i;
+    unsigned long tsl_len;
+    unsigned char ret;
 
+    for (i = 0; i < total_len;)
+    {
+        tsl_len = wifi_data_process_buf[offset + DATA_START + i + 3] * 0x100;
+        tsl_len += wifi_data_process_buf[offset + DATA_START + i + 4];
+        ret = data_point_handle((unsigned char *)wifi_data_process_buf + offset + DATA_START + i);
+        if (SUCCESS == ret){
+            // 成功提示
+        }
+        else{
+            // 错误提示
+        }
+        i += (tsl_len + 5);
+    }
+}
+
+#ifdef SUPPORT_MCU_FIRM_UPDATE
+    static unsigned long firm_length = 0;                               //MCU升级文件长度
+    static unsigned char firm_update_flag = 0;                          //MCU升级标志
+/**
+ * @brief  处理MCU固件升级传输
+ * @param[in] {offset} 下发数据源指针
+ * @return 返回数据处理结果
+ */
+void handle_firmware_update_trans(const unsigned char* firm_module, unsigned short offset)
+{
+    unsigned char ret;
+    unsigned long tsl_len;
+    unsigned short total_len;
+    unsigned char *firmware_addr = NULL;
+
+    total_len = (wifi_data_process_buf[offset + LENGTH_HIGH] << 8) | wifi_data_process_buf[offset + LENGTH_LOW];
+
+    tsl_len = wifi_data_process_buf[offset + DATA_START];
+    tsl_len <<= 8;
+    tsl_len |= wifi_data_process_buf[offset + DATA_START + 1];
+    tsl_len <<= 8;
+    tsl_len |= wifi_data_process_buf[offset + DATA_START + 2];
+    tsl_len <<= 8;
+    tsl_len |= wifi_data_process_buf[offset + DATA_START + 3];
+
+    firmware_addr = (unsigned char *)wifi_data_process_buf;
+    firmware_addr += (offset + DATA_START + 4);
+
+    if ((total_len == 4) && (tsl_len == firm_length)){
+        // 最后一包
+        printf("<%s:%d>firm_module = %s\r\n", __FILE__, __LINE__, firm_module);/*tips*/
+        ret = mcu_firm_update_handle(firm_module,firmware_addr, tsl_len, 0);
+        firm_update_flag = 0;
+    }
+    else if ((total_len - 4) <= FIRMWARE_PACKAGE_SIZE){
+        printf("<%s:%d>firm_module = %s\r\n", __FILE__, __LINE__, firm_module);/*tips*/
+        ret = mcu_firm_update_handle(firm_module,firmware_addr, tsl_len, total_len - 4);
+    }
+    else{
+        firm_update_flag = 0;
+        ret = ERROR;
+    }
+    if (ret == SUCCESS)
+    {
+        if (firm_module == NULL)
+            wifi_uart_write_frame(UPDATE_TRANS_CMD, MCU_TX_VER, 0);
+#ifdef SUPPORT_MULTI_COMPONENT
+        else
+            wifi_uart_write_frame(MULTI_MCU_UPDATE_TRANS_CMD, MCU_TX_VER, 0);
+#endif // SUPPORT_MULTI_COMPONENT
+    }
+}
+
+#ifdef SUPPORT_MULTI_COMPONENT
+typedef struct{
+    unsigned long firm_length;
+    unsigned char module[33];
+    unsigned char md5[33];
+    unsigned char crc32[9];
+}otaInfo_t;
+
+otaInfo_t g_otaInfo = {0};
+void parse_data(const unsigned char* data, otaInfo_t *info)
+{
+    const char *module_start, *module_end;
+    const char *size_start/*, *size_end*/;
+    const char *md5_start, *md5_end;
+    const char *crc32_start, *crc32_end;
+
+    // 查找字段 "module" 的起始和结束位置
+    module_start = my_strstr((char*)data, "\"module\":\"");
+    module_end = my_strstr(module_start + 10, "\"");
+    printf("module_start = %p, module_end = %p\r\n", module_start, module_end);
+
+    // 查找字段 "size" 的起始和结束位置
+    size_start = my_strstr((char*)data, "\"size\":");
+    // size_end = my_strstr(size_start + 7, ",");
+
+    // 查找字段 "md5" 的起始和结束位置
+    md5_start = my_strstr((char*)data, "\"md5\":\"");
+    md5_end = my_strstr(md5_start + 7, "\"");
+
+    // 查找字段 "crc32" 的起始和结束位置
+    crc32_start = my_strstr((char*)data, "\"crc32\":\"");
+    crc32_end = my_strstr(crc32_start + 9, "\"");
+
+    info->firm_length = atoi(size_start + 7);
+    my_strncpy((char*)info->module, module_start + 10, module_end - (module_start + 10));
+    info->module[module_end - (module_start + 10)] = '\0';
+    my_strncpy((char*)info->md5, md5_start + 7, md5_end - (md5_start + 7));
+    info->md5[md5_end - (md5_start + 7)] = '\0';
+    my_strncpy((char*)info->crc32, crc32_start + 9, crc32_end - (crc32_start + 9));
+    info->crc32[crc32_end - (crc32_start + 9)] = '\0';
+}
+#endif // SUPPORT_MULTI_COMPONENT
+#endif // SUPPORT_MCU_FIRM_UPDATE
 
 
 
@@ -261,22 +379,8 @@ static unsigned char data_point_handle(const unsigned char value[])
  */
 void data_handle(unsigned short offset)
 {
-#ifdef SUPPORT_MCU_FIRM_UPDATE
-    unsigned char *firmware_addr = NULL;
-    static unsigned short firm_size;                                            //升级包一包的大小
-    static unsigned long firm_length;                                           //MCU升级文件长度
-    static unsigned char firm_update_flag = 0;                                  //MCU升级标志
-    unsigned long tsl_len;
-    unsigned char firm_flag;                                                    //升级包大小标志
-#else
-
-    unsigned short tsl_len;
-#endif
-    unsigned char ret;
-    unsigned short i,total_len;
     unsigned char cmd_type = wifi_data_process_buf[offset + FRAME_TYPE];
     unsigned char result;
-
 
 #ifdef WIFI_TEST_ENABLE
     unsigned char rssi;
@@ -301,40 +405,16 @@ void data_handle(unsigned short offset)
             reset_wifi_flag = RESET_WIFI_SUCCESS;
         break;   
         case DATA_QUERT_CMD:                                    //命令下发
-            total_len = (wifi_data_process_buf[offset + LENGTH_HIGH] << 8) | wifi_data_process_buf[offset + LENGTH_LOW];
-    
-            for(i = 0;i < total_len; ) {
-                tsl_len = wifi_data_process_buf[offset + DATA_START + i + 2] * 0x100;
-                tsl_len += wifi_data_process_buf[offset + DATA_START + i + 3];
-                //
-                ret = data_point_handle((unsigned char *)wifi_data_process_buf + offset + DATA_START + i);
-      
-                if(SUCCESS == ret) {
-                    //成功提示
-                }else {
-                    //错误提示
-                }
-      
-                i += (tsl_len + 4);
-            }
+            handle_data_query(offset, (wifi_data_process_buf[offset + LENGTH_HIGH] << 8) | wifi_data_process_buf[offset + LENGTH_LOW]);
         break;
     
-        case STATE_QUERY_CMD:                                   //状态查询
-            all_data_update();                               
+        case STATE_QUERY_CMD:                                   //状态查询，蓝牙的连接状态需要调用 mcu_get_ble_connect_status 接口主动查询
+            if(wifi_work_state == 3 || wifi_work_state == 4 || ble_work_state == 3) 
+                all_data_update();
         break;
     
 #ifdef SUPPORT_MCU_FIRM_UPDATE
         case UPDATE_START_CMD:                                  //升级开始
-            //获取升级包大小全局变量
-            firm_flag = PACKAGE_SIZE;
-            if(firm_flag == 0) {
-                firm_size = 256;
-            }else if(firm_flag == 1) {
-                firm_size = 512;
-            }else if(firm_flag == 2) { 
-                firm_size = 1024;
-            }
-
             firm_length = wifi_data_process_buf[offset + DATA_START];
             firm_length <<= 8;
             firm_length |= wifi_data_process_buf[offset + DATA_START + 1];
@@ -343,7 +423,7 @@ void data_handle(unsigned short offset)
             firm_length <<= 8;
             firm_length |= wifi_data_process_buf[offset + DATA_START + 3];
             
-            upgrade_package_choose(PACKAGE_SIZE);
+            mcu_upgrade_package_choose(UPDATE_START_CMD, PACKAGE_SIZE);
             firm_update_flag = UPDATE_START_CMD;
         break;
     
@@ -351,49 +431,38 @@ void data_handle(unsigned short offset)
             if(firm_update_flag == UPDATE_START_CMD) {
                 //停止一切数据上报
                 stop_update_flag = ENABLE;
-      
-                total_len = (wifi_data_process_buf[offset + LENGTH_HIGH] << 8) | wifi_data_process_buf[offset + LENGTH_LOW];
-      
-                tsl_len = wifi_data_process_buf[offset + DATA_START];
-                tsl_len <<= 8;
-                tsl_len |= wifi_data_process_buf[offset + DATA_START + 1];
-                tsl_len <<= 8;
-                tsl_len |= wifi_data_process_buf[offset + DATA_START + 2];
-                tsl_len <<= 8;
-                tsl_len |= wifi_data_process_buf[offset + DATA_START + 3];
-      
-                firmware_addr = (unsigned char *)wifi_data_process_buf;
-                firmware_addr += (offset + DATA_START + 4);
-      
-                if((total_len == 4) && (tsl_len == firm_length)) {
-                    //最后一包
-                    ret = mcu_firm_update_handle(firmware_addr,tsl_len,0);
-                    firm_update_flag = 0;
-                }else if((total_len - 4) <= firm_size) {
-                    ret = mcu_firm_update_handle(firmware_addr,tsl_len,total_len - 4);
-                }else {
-                    firm_update_flag = 0;
-                    ret = ERROR;
-                }
-      
-                if(ret == SUCCESS) {
-                    wifi_uart_write_frame(UPDATE_TRANS_CMD, MCU_TX_VER, 0);
-                }
+                handle_firmware_update_trans(NULL, offset);
                 //恢复一切数据上报
                 stop_update_flag = DISABLE;
             }
         break;
-#endif
+#ifdef SUPPORT_MULTI_COMPONENT
+        case MULTI_MCU_UPDATE_START_CMD:
+            my_memset(&g_otaInfo, 0x00, sizeof(otaInfo_t));
+            parse_data((const unsigned char*)wifi_data_process_buf + offset + DATA_START, &g_otaInfo);
+            firm_length = g_otaInfo.firm_length;
+            mcu_upgrade_package_choose(MULTI_MCU_UPDATE_START_CMD,PACKAGE_SIZE);
+            firm_update_flag = MULTI_MCU_UPDATE_START_CMD;
+        break;
+        case MULTI_MCU_UPDATE_TRANS_CMD:
+            if (firm_update_flag == MULTI_MCU_UPDATE_START_CMD){
+                // 停止一切数据上报
+                stop_update_flag = ENABLE;
+                handle_firmware_update_trans(g_otaInfo.module, offset);
+                // 恢复一切数据上报
+                stop_update_flag = DISABLE;
+            }
+        break;
+#endif //SUPPORT_MULTI_COMPONENT
+#endif //SUPPORT_MCU_FIRM_UPDATE
         case GET_ONLINE_TIME_CMD:                               //获取格林时间
             mcu_get_greentime((unsigned char *)(wifi_data_process_buf + offset + DATA_START));
         break;
-
 
         case GET_LOCAL_TIME_CMD:                               //获取本地时间
             mcu_write_rtctime((unsigned char *)(wifi_data_process_buf + offset + DATA_START));
         break;
 
- 
         case WIFI_TEST_CMD:                                     //wifi功能测试（扫描指定路由）
             result = wifi_data_process_buf[offset + DATA_START];
             rssi = wifi_data_process_buf[offset + DATA_START + 1];
@@ -403,13 +472,20 @@ void data_handle(unsigned short offset)
             mcu_get_mac((unsigned char *)(wifi_data_process_buf + offset + DATA_START));
         break;
 
-
-
         case GET_WIFI_STATUS_CMD:                               //获取当前wifi联网状态
             result = wifi_data_process_buf[offset + DATA_START];
             get_wifi_status(result);
         break;
 
+        case GET_BLE_STATUS_CMD:                               //获取蓝牙连接状态
+            result = wifi_data_process_buf[offset + DATA_START + 1] ;
+            get_ble_status(result);
+        break;
+
+        case GET_IP_ADDRESS_CMD:                               //获取当前模组的IP地址
+            result = wifi_data_process_buf[offset + DATA_START] ;
+            get_ip_address((unsigned char *)(wifi_data_process_buf + offset + DATA_START));
+        break;
 
 #ifdef MCU_TSL_UPLOAD_SYN
         case STATE_UPLOAD_SYN_RECV_CMD:                         //状态上报（同步）

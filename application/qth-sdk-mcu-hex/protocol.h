@@ -11,7 +11,6 @@
 ******************************************************************************/
 #define PK_PS "p11pjq_N2ZDQmtRa0pNQktt"      //在开发者中心创建产品生成的生成的产品唯一标识和对应的密钥，两者通过下划线连接
 
-#define MCU_VER "1.0.0"                      //用户的软件版本,用于MCU固件升级,MCU升级版本需修改
 /****************************************************************************
                        可选的配置
 ***************************************************************************/
@@ -31,12 +30,22 @@ MCU可调用mcu_api.c文件内的mcu_firm_update_query()函数获取当前MCU固
 当前接收缓冲区为关闭固件更新功能的大小,固件升级包可选择，默认256字节大小
 如需要开启该功能,串口接收缓冲区会变大
 ******************************************************************************/
-#define         SUPPORT_MCU_FIRM_UPDATE                 //开启MCU固件升级功能(默认关闭)
+#define         SUPPORT_MCU_FIRM_UPDATE             //开启MCU固件升级功能(默认关闭)
+#define			SUPPORT_MULTI_COMPONENT				//开启多组件升级功能
+
+#ifdef SUPPORT_MCU_FIRM_UPDATE		 //用户的软件版本,用于MCU固件升级,MCU升级版本需修改
+/* 设置多MCU的版本 */
+#if defined(SUPPORT_MULTI_COMPONENT)
+	#define MCU_VER "\",\"v_list\":{\"MCUA\":\"1.0.1\",\"MCUB\":\"1.0.2\",\"MCUC\":\"1.0.3\"}"
+#else
+	#define MCU_VER "\",\"v\":\"1.0.0\""
+#endif
+#endif
+
 /*  Firmware package size selection  */
 #ifdef SUPPORT_MCU_FIRM_UPDATE
-// #define PACKAGE_SIZE                   0        //包大小为256字节
-#define PACKAGE_SIZE                   1        //包大小为512字节
-//#define PACKAGE_SIZE                   2        //包大小为1024字节
+#define PACKAGE_SIZE                   1        //包大小 0:256字节 1:512字节 2:1024字节
+#define FIRMWARE_PACKAGE_SIZE          ((1<<PACKAGE_SIZE)*256)
 #endif
 
 /******************************************************************************
@@ -53,9 +62,7 @@ MCU可调用mcu_api.c文件内的mcu_firm_update_query()函数获取当前MCU固
 #define WIFI_UART_RECV_BUF_LMT          1024             //串口数据接收缓存区大小,如MCU的RAM不够,可缩小
 
 //请在此处选择合适的串口数据处理缓存大小（根据上面MCU固件升级包选择的大小选择开启多大的缓存）
-#define WIFI_DATA_PROCESS_LMT           1024             //串口数据处理缓存大小,如需MCU固件升级,若单包大小选择256,则缓存必须大于260
-//#define WIFI_DATA_PROCESS_LMT           600             //串口数据处理缓存大小,如需MCU固件升级,若单包大小选择512,则缓存必须大于520
-//#define WIFI_DATA_PROCESS_LMT           1200            //串口数据处理缓存大小,如需MCU固件升级,若单包大小选择1024,则缓存必须大于1030
+#define WIFI_DATA_PROCESS_LMT        ((1<<PACKAGE_SIZE)*300)             //串口数据处理缓存大小,如需MCU固件升级,若单包大小选择256,则缓存必须大于260
 
 #endif
 
@@ -511,7 +518,7 @@ unsigned char get_download_cmd_total(void);
  * @return Null
  * @note   MCU需要自行实现该功能
  */
-void upgrade_package_choose(unsigned char package_sz);
+void mcu_upgrade_package_choose(unsigned char fr_type, unsigned char package_sz);
 
 /**
  * @brief  MCU进入固件升级模式
@@ -521,7 +528,7 @@ void upgrade_package_choose(unsigned char package_sz);
  * @return Null
  * @note   MCU需要自行实现该功能
  */
-unsigned char mcu_firm_update_handle(const unsigned char value[],unsigned long position,unsigned short length);
+unsigned char mcu_firm_update_handle(const unsigned char* module_name, const unsigned char value[],unsigned long position,unsigned short length);
 #endif
 
 
@@ -600,5 +607,23 @@ void get_wifi_status(unsigned char result);
 void mcu_get_mac(unsigned char mac[]);
 #endif
 
+/**
+ * @brief  获取 BLE 状态结果
+ * @param[in] {result} 指示 WIFI 工作状态
+ * @ref       0x00: ble状态 1 设备未配网，蓝牙未连接
+ * @ref       0x01: ble状态 2 设备未配网，蓝牙已连接
+ * @ref       0x02: ble状态 3 设备已配网，蓝牙未连接
+ * @ref       0x03: ble状态 4 设备已配网，蓝牙已连接
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+void get_ble_status(unsigned char result);
 
+/**
+ * @brief  获取当前模组的IP地址
+ * @param[in] {ip} 模块 IP 数据
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+void get_ip_address(unsigned char ip[]);
 #endif

@@ -12,7 +12,8 @@
 #include "stdint.h"
 #include "stdlib.h"
 
-#define MCU_WIFI_SDK_VER "v1.0.2"
+#define MCU_WIFI_SDK_VER "v1.0.4 2023/10/10"
+
 
 //=============================================================================
 //定义常量
