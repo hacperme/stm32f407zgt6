@@ -30,6 +30,8 @@
 #include "usart.h"
 #include "nr_micro_shell.h"
 #include "wifi.h"
+#include "spi.h"
+#include "gpio.h"
 
 /* USER CODE END Includes */
 
@@ -170,20 +172,81 @@ void StartDefaultTask(void *argument)
   /* USER CODE END StartDefaultTask */
 }
 
-
-
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+uint8_t send_buf[100];
+uint8_t recv_buf[100];
+void dump_hex(void *buf, uint32_t size, uint32_t number);
+
 static void uart1_task_entry(void *arg)
 {
   wifi_protocol_init();
   HAL_UART_Receive_IT(&huart1, &uart1_rx, 1);
   HAL_UART_Receive_IT(&huart2, &uart2_rx, 1);
+  int ret = 0;
+  int slave_data_len = 0;
+  unsigned int cnt= 0;
   while (1)
   {
 
     wifi_uart_service();
-    osDelay(200);
+    for (size_t i = 0; i < 100; i++)
+    {
+      send_buf[i] = i+cnt;
+      
+    }
+    cnt++;
+
+    while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY)
+    {
+      osDelay(5);
+    }
+    send_buf[0] = 0x51;
+    send_buf[1] = 0x00;
+    HAL_GPIO_WritePin(SPI2CS_GPIO_Port, SPI2CS_Pin, GPIO_PIN_RESET);
+    ret = HAL_SPI_Transmit(&hspi2, (uint8_t *)send_buf, 10, 0xFFFF);
+    HAL_GPIO_WritePin(SPI2CS_GPIO_Port, SPI2CS_Pin, GPIO_PIN_SET);
+    printf("send_buf[%d]:\r\n", ret);
+    dump_hex(send_buf+2, 8, 8);
+
+    // do
+    // {
+    //   while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY)
+    //   {
+    //     osDelay(5);
+    //   }
+    //   send_buf[0] = 0xaa;
+    //   send_buf[1] = 0x00;
+    //   HAL_GPIO_WritePin(SPI2CS_GPIO_Port, SPI2CS_Pin, GPIO_PIN_RESET);
+    //   ret = HAL_SPI_Transmit(&hspi2, (uint8_t *)send_buf, 2, 0xFFFF);
+
+    //   HAL_SPI_Receive(&hspi2, (uint8_t *)&slave_data_len, sizeof(slave_data_len), 0xFFFF);
+    //   HAL_GPIO_WritePin(SPI2CS_GPIO_Port, SPI2CS_Pin, GPIO_PIN_SET);
+    //   printf("recv_buf[%d]:\r\n", ret);
+    //   dump_hex(&slave_data_len, sizeof(slave_data_len), 8);
+    //   // 转换字节序 32 位
+    //   slave_data_len = ((slave_data_len & 0x000000FF) << 24) | ((slave_data_len & 0x0000FF00) << 8) | ((slave_data_len & 0x00FF0000) >> 8) | ((slave_data_len & 0xFF000000) >> 24);
+    //   printf("slave_data_len[%d]\r\n", slave_data_len);
+    // } while (slave_data_len <= 0);
+
+    slave_data_len = 8;
+    if (slave_data_len > 0)
+    {
+      while (HAL_SPI_GetState(&hspi2) != HAL_SPI_STATE_READY)
+      {
+        osDelay(5);
+      }
+      send_buf[0] = 0x0b;
+      send_buf[1] = 0x00;
+      HAL_GPIO_WritePin(SPI2CS_GPIO_Port, SPI2CS_Pin, GPIO_PIN_RESET);
+      ret = HAL_SPI_Transmit(&hspi2, (uint8_t *)send_buf, 2, 0xFFFF);
+      HAL_SPI_Receive(&hspi2, (uint8_t *)recv_buf, slave_data_len, 0xFFFF);
+      HAL_GPIO_WritePin(SPI2CS_GPIO_Port, SPI2CS_Pin, GPIO_PIN_SET);
+      printf("recv_buf[%d]:\r\n", ret);
+      dump_hex(recv_buf, slave_data_len, 8);
+    }
+
+    osDelay(1000);
   }
   uart1_task = NULL;
   vTaskDelete(NULL);

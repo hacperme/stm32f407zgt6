@@ -19,21 +19,124 @@
 ******************************************************************************/
 
 /******************************************************************************
-                        1:dp数据点序列类型对照表
+                        1:tsl数据点序列类型对照表
                         **请和平台所设置的保持一致**         
 ******************************************************************************/
-// #error "请将功能点ID与类型的匹配关系和平台上设置的保持一致,并删除该行"
-const DOWNLOAD_CMD_S download_cmd[] =
-{
-//   {DPID_TEST_RAW, DP_TYPE_RAW},
-  {DPID_TEST_BOOL, DP_TYPE_BOOL},
-  {DPID_TEST_VALUE, DP_TYPE_VALUE},
-  {DPID_TEST_FAULT,DP_TYPE_BITMAP},
-  {DPID_TEST_STRUCT,DP_TYPE_STRUCT},
-  {DPID_TEST_STRING,DP_TYPE_STRING},
-  {DPID_TEST_DOUBLE,DP_TYPE_DOUBLE},
+
+const DOWNLOAD_CMD_S download_cmd[] = {
+    // {TSLID_BATTERY_PERCENTAGE_INT, TSL_TYPE_VALUE},
+    // {TSLID_REMAIN_TIME_INT, TSL_TYPE_VALUE},
+    // {TSLID_REMAIN_CHARGING_TIME_INT, TSL_TYPE_VALUE},
+    // {TSLID_TOTAL_INPUT_POWER_INT, TSL_TYPE_VALUE},
+    // {TSLID_TOTAL_OUTPUT_POWER_INT, TSL_TYPE_VALUE},
+    {TSLID_AC_INFO_STRUCT, TSL_TYPE_STRUCT},
+    {TSLID_USB_DATA_STRUCT, TSL_TYPE_STRUCT},
+    {TSLID_TYPEC_DATA_STRUCT, TSL_TYPE_STRUCT},
+    {TSLID_DC_DATA_STRUCT, TSL_TYPE_STRUCT},
+    {TSLID_LED_STATUS_INT, TSL_TYPE_VALUE},
+    // {TSLID_AC_INPUT_INT, TSL_TYPE_VALUE},
+    // {TSLID_DC_INPUT_INT, TSL_TYPE_VALUE},
+    // {TSLID_USB_INPUT_INT, TSL_TYPE_VALUE},
+    // {TSLID_TEMP_INT, TSL_TYPE_VALUE},
+    {TSLID_DEVICE_STATUS_INT, TSL_TYPE_VALUE},
+    {TSLID_STANDBY_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_SCREEN_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_AC_STANDBY_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_DC_STANDBY_TIME_INT, TSL_TYPE_VALUE},
+    {TSLID_AC_CHARGING_POWER_LIMIT_INT, TSL_TYPE_VALUE},
+    {TSLID_BEEP_INT, TSL_TYPE_VALUE},
+    {TSLID_SCREEN_BRIGHTNESS_INT, TSL_TYPE_VALUE},
+    {TSLID_DEVICE_WORK_MODE_INT, TSL_TYPE_VALUE},
+    {TSLID_TIMING_ARRARY, TSL_TYPE_STRUCT},
+    // {TSLID_DEVICE_MODEL_STRING, TSL_TYPE_STRING},
+    // {TSLID_BLUETOOTH_MAC_STRING, TSL_TYPE_STRING},
 };
 
+tsl_demo_t g_tsl_demo = {
+    .battery_percentage = 50,
+    .remain_time = 140,
+    .remain_charging_time = 70,
+    .total_input_power = 149,
+    .total_output_power = 567,
+    .ac_info = {
+        .ac_switch= 1,
+        .ac1_output = 0,
+        .ac1_output_voltage = 0,
+        .ac1_output_current = 0,
+        .ac2_output = 0,
+        .ac2_output_voltage = 0,
+        .ac2_output_current = 0,
+
+    },
+    
+    .usb_data = {
+        .usb_switch = 1,
+        .usb1_output = 0,
+        .usb1_output_voltage = 0,
+        .usb1_output_current = 0,
+        .usb2_output = 49,
+        .usb2_output_voltage = 5,
+        .usb2_output_current = 10,
+        .usb3_output = 0,
+        .usb3_output_voltage = 0,
+        .usb3_output_current = 0,
+        .usb4_output = 0,
+        .usb4_output_voltage = 0,
+        .usb4_output_current = 0,
+    },
+    .typec_data = {
+        .typec_switch = 1,
+        .typec1_output = 49,
+        .typec1_output_voltage = 5,
+        .typec1_output_current = 10,
+        .typec2_output = 0,
+        .typec2_output_voltage = 0,
+        .typec2_output_current = 0,
+    },
+    .dc_data = {
+        .dc_switch = 0,
+        .car1_output = 0,
+        .car1_output_voltage = 0,
+        .car1_output_current = 0,
+        .car2_output = 0,
+        .car2_output_voltage = 0,
+        .car2_output_current = 0,
+        .dc12v1_output = 0,
+        .dc12v1_output_voltage = 0,
+        .dc12v1_output_current = 0,
+        .dc12v2_output = 0,
+        .dc12v2_output_voltage = 0,
+        .dc12v2_output_current = 0,  
+    },
+    .led_status = 2,
+    .ac_input_power = 0,
+    .dc_input_power = 0,
+    .usb_input_power = 0,
+    .temp = 36,
+    .device_status = 2,
+    
+    .standby_time = 5,
+    .screen_time = 5,
+    .ac_standby_time = 5,
+    .dc_standby_time = 5,
+    .ac_power_limit = 100,
+    .beep = 0,
+    .screen_brightness = 50,
+    .device_mode = 1,
+
+    .timing={
+       {0},
+    },
+    .device_sn = "stm32f407zgt6",
+    .bluetooth_mac = "00:00:00:00:00:00",
+};
+
+#define USE_MULTT_DATAP_UPLOAD 1
+
+#if USE_MULTT_DATAP_UPLOAD
+static mcu_tsl_datap_t g_datap = {0};
+unsigned char g_datap_buf[1024] = {0};
+#endif
 
 
 /******************************************************************************
@@ -48,17 +151,11 @@ const DOWNLOAD_CMD_S download_cmd[] =
  */
 void uart_transmit_output(unsigned char value)
 {
-    // #error "请将MCU串口发送函数填入该函数,并删除该行"
 
     extern int _write2(int fd, char *ptr, int len) ;
 
     _write2(1, (char *)&value, 1);
     
-/*
-    //Example:
-    extern void Uart_PutChar(unsigned char value);
-    Uart_PutChar(value);	                                //串口发送函数
-*/
 }
 
 /******************************************************************************
@@ -77,70 +174,303 @@ void uart_transmit_output(unsigned char value)
 用户也可调用此函数实现全部数据上报
 ******************************************************************************/
 
+unsigned char ac_info_update(void)
+{
+    mcu_tsl_struct_t ac_info = {0};
+    unsigned char ac_info_buffer[300] = {0};
+    
+
+    mcu_tsl_struct_init(TSLID_AC_INFO_STRUCT, &ac_info, ac_info_buffer, sizeof(ac_info_buffer));
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC_SWITCH_BOOL, &ac_info,
+                            TSL_TYPE_BOOL, (unsigned char *)&g_tsl_demo.ac_info.ac_switch, 1);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC1_OUTPUT_INT, &ac_info,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC1_OUTPUT_VOLTAGE_INT, &ac_info,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC1_OUTPUT_CURRENT_INT, &ac_info,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac1_output_current, 4);
+
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC2_OUTPUT_INT, &ac_info,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC2_OUTPUT_VOLTAGE_INT, &ac_info,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_AC_INFO_STRUCT_AC2_OUTPUT_CURRENT_INT, &ac_info,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.ac_info.ac2_output_current, 4);
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)&ac_info, ac_info.offset);
+#else
+    return mcu_tsl_struct_update(&ac_info);
+#endif
+}
+
+unsigned char usb_data_update(void)
+{
+    mcu_tsl_struct_t ac_info = {0};
+    unsigned char ac_info_buffer[300] = {0};
+
+    mcu_tsl_struct_t *usb_data = NULL;
+    unsigned char *usb_data_buffer = NULL;
+
+    usb_data = &ac_info;
+    usb_data_buffer = ac_info_buffer;
+
+    mcu_tsl_struct_init(TSLID_USB_DATA_STRUCT, usb_data, usb_data_buffer, sizeof(ac_info_buffer));
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB_SWITCH_BOOL, usb_data,
+                            TSL_TYPE_BOOL, (unsigned char *)&g_tsl_demo.usb_data.usb_switch, 1);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB1_OUTPUT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB1_OUTPUT_VOLTAGE_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB1_OUTPUT_CURRENT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb1_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB2_OUTPUT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB2_OUTPUT_VOLTAGE_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB2_OUTPUT_CURRENT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb2_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB3_OUTPUT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb3_output, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB3_OUTPUT_VOLTAGE_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb3_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB3_OUTPUT_CURRENT_INT, usb_data,                    
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb3_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB4_OUTPUT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb4_output, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB4_OUTPUT_VOLTAGE_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb4_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_USB_DATA_STRUCT_USB4_OUTPUT_CURRENT_INT, usb_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.usb_data.usb4_output_current, 4);
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)usb_data, usb_data->offset);
+#else
+    return mcu_tsl_struct_update(usb_data);
+#endif
+}
+
+unsigned char typec_data_update(void)
+{
+    mcu_tsl_struct_t ac_info = {0};
+    unsigned char ac_info_buffer[300] = {0};
+
+    mcu_tsl_struct_t *typec_data = NULL;
+    unsigned char *typec_data_buffer = NULL;
+
+    typec_data = &ac_info;
+    typec_data_buffer = ac_info_buffer;
+
+    mcu_tsl_struct_init(TSLID_TYPEC_DATA_STRUCT, typec_data, typec_data_buffer, sizeof(ac_info_buffer));
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC_SWITCH_BOOL, typec_data,
+                            TSL_TYPE_BOOL, (unsigned char *)&g_tsl_demo.typec_data.typec_switch, 1);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_VOLTAGE_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_CURRENT_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec1_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_VOLTAGE_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_CURRENT_INT, typec_data,
+                            TSL_TYPE_VALUE, (unsigned char *)&g_tsl_demo.typec_data.typec2_output_current, 4);
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)typec_data, typec_data->offset);
+#else
+    return mcu_tsl_struct_update(typec_data);
+#endif
+}
+
+
+unsigned char dc_data_update(void)
+{
+    mcu_tsl_struct_t ac_info = {0};
+    unsigned char ac_info_buffer[300] = {0};
+
+    mcu_tsl_struct_t *dc_data = NULL;
+    unsigned char *dc_data_buffer = NULL;
+
+    dc_data = &ac_info;
+    dc_data_buffer = ac_info_buffer;
+
+    mcu_tsl_struct_init(TSLID_DC_DATA_STRUCT, dc_data, dc_data_buffer, sizeof(ac_info_buffer));
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC_SWITCH_BOOL, dc_data,
+                            TSL_TYPE_BOOL, (unsigned char *)&g_tsl_demo.dc_data.dc_switch, 1);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_VOLTAGE_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_CURRENT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car1_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_VOLTAGE_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_CURRENT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.car2_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v1_output, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_VOLTAGE_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v1_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_CURRENT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v1_output_current, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v2_output, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_VOLTAGE_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v2_output_voltage, 4);
+    mcu_tsl_struct_add_item(TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_CURRENT_INT, dc_data, TSL_TYPE_VALUE,
+                            (unsigned char *)&g_tsl_demo.dc_data.dc12v2_output_current, 4);
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)dc_data, dc_data->offset);
+#else
+    return mcu_tsl_struct_update(dc_data);
+#endif
+}
+
+unsigned char timing_update(void)
+{
+    mcu_tsl_struct_t ac_info = {0};
+    unsigned char ac_info_buffer[300] = {0};
+
+    mcu_tsl_struct_t *timing = NULL;
+    unsigned char *timing_buffer = NULL;
+
+    mcu_tsl_struct_t timing_item = {0};
+    unsigned char timing_item_buffer[100] = {0};
+
+    timing = &ac_info;
+    timing_buffer = ac_info_buffer;
+
+    mcu_tsl_struct_init(TSLID_TIMING_ARRARY, timing, timing_buffer, sizeof(ac_info_buffer));
+    for (size_t i = 0; i < 10; i++)
+    {
+        mcu_tsl_struct_init(0, &timing_item, timing_item_buffer, sizeof(timing_item_buffer));
+        mcu_tsl_struct_add_item(TSLID_TIMING_ARRARY_TIME_INT, &timing_item, TSL_TYPE_VALUE,
+                                (unsigned char *)&g_tsl_demo.timing[i].time, 4);
+        mcu_tsl_struct_add_item(TSLID_TIMING_ARRARY_ACTION_BOOL, &timing_item, TSL_TYPE_BOOL,
+                                (unsigned char *)&g_tsl_demo.timing[i].action, 1);
+        mcu_tsl_struct_add_item(TSLID_TIMING_ARRARY_ACTION_STATUS_BOOL, &timing_item, TSL_TYPE_BOOL,
+                                (unsigned char *)&g_tsl_demo.timing[i].action_status, 1);
+        mcu_tsl_struct_add_struct(timing, &timing_item);
+    }
+#if USE_MULTT_DATAP_UPLOAD
+    return mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRUCT, 0, (const unsigned char *)timing, timing->offset);
+#else
+    return mcu_tsl_struct_update(timing);
+#endif
+}
+
 
 /**
- * @brief  系统所有dp点信息上传,实现APP和muc数据同步
+ * @brief  系统所有tsl点信息上传,实现APP和muc数据同步
  * @param  Null
  * @return Null
  * @note   此函数SDK内部需调用，MCU必须实现该函数内数据上报功能，包括只上报和可上报可下发型数据
  */
 void all_data_update(void)
 {
-    // #error "请在此处理可下发可上报数据及只上报数据示例,处理完成后删除该行"
-    
-    //请按照实际数据修改每个可下发可上报函数和只上报函数
-    mcu_dp_bool_update(DPID_TEST_BOOL,0); //BOOL型数据上报;
-    mcu_dp_value_update(DPID_TEST_VALUE,12); //VALUE型数据上报;
-    mcu_dp_fault_update(DPID_TEST_FAULT, 0x03);//故障型数据上报;
-    mcu_dp_string_update(DPID_TEST_STRING, (const unsigned char *)"test_string", strlen("test_string")); //STRING型数据上报;
-    mcu_dp_double_update(DPID_TEST_DOUBLE, 12.34); //DOUBLE型数据上报;
 
-    mcu_dp_struct_t st = {0};
-    unsigned char buf[200] = {0};
-    mcu_dp_struct_init(DPID_TEST_STRUCT, &st, buf, sizeof(buf));
-    int test_value = 123;
-    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_VALUE, &st, DP_TYPE_VALUE, (unsigned char *)&test_value, sizeof(test_value));
-    unsigned char test_bool = 1;
-    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_BOOL, &st, DP_TYPE_BOOL, &test_bool, sizeof(test_bool));
-    unsigned char test_string[] = "substring";
-    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_STRING, &st, DP_TYPE_STRING, test_string, strlen((const char *)test_string));
-    double test_double = 22.34;
-    mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_DOUBLE, &st, DP_TYPE_DOUBLE, (unsigned char *)&test_double, sizeof(test_double));
-    mcu_dp_struct_update(&st); //结构体型数据上报;
+#if USE_MULTT_DATAP_UPLOAD
+    mcu_tsl_datap_init(&g_datap, g_datap_buf, sizeof(g_datap_buf));
 
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_BATTERY_PERCENTAGE_INT, (const unsigned char *)&g_tsl_demo.battery_percentage, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_REMAIN_TIME_INT, (const unsigned char *)&g_tsl_demo.remain_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_REMAIN_CHARGING_TIME_INT, (const unsigned char *)&g_tsl_demo.remain_charging_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_TOTAL_INPUT_POWER_INT, (const unsigned char *)&g_tsl_demo.total_input_power, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_TOTAL_OUTPUT_POWER_INT, (const unsigned char *)&g_tsl_demo.total_output_power, 4);
+
+
+    ac_info_update();
+
+    usb_data_update();
+
+    typec_data_update();
+
+    dc_data_update();
+
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_LED_STATUS_INT, (const unsigned char *)&g_tsl_demo.led_status, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_AC_INPUT_INT, (const unsigned char *)&g_tsl_demo.ac_input_power, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_DC_INPUT_INT, (const unsigned char *)&g_tsl_demo.dc_input_power, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_TEMP_INT, (const unsigned char *)&g_tsl_demo.temp, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_DEVICE_STATUS_INT, (const unsigned char *)&g_tsl_demo.device_status, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_STANDBY_TIME_INT, (const unsigned char *)&g_tsl_demo.standby_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_SCREEN_TIME_INT, (const unsigned char *)&g_tsl_demo.screen_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_AC_STANDBY_TIME_INT, (const unsigned char *)&g_tsl_demo.ac_standby_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_DC_STANDBY_TIME_INT, (const unsigned char *)&g_tsl_demo.dc_standby_time, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_AC_CHARGING_POWER_LIMIT_INT, (const unsigned char *)&g_tsl_demo.ac_power_limit, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_BEEP_INT, (const unsigned char *)&g_tsl_demo.beep, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_SCREEN_BRIGHTNESS_INT, (const unsigned char *)&g_tsl_demo.screen_brightness, 4);
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_VALUE, TSLID_DEVICE_WORK_MODE_INT, (const unsigned char *)&g_tsl_demo.device_mode, 4);
+
+    timing_update();
+
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRING, TSLID_DEVICE_MODEL_STRING, (const unsigned char *)g_tsl_demo.device_sn, my_strlen((unsigned char *)g_tsl_demo.device_sn));
+    mcu_tsl_datap_add(&g_datap, TSL_TYPE_STRING, TSLID_BLUETOOTH_MAC_STRING, (const unsigned char *)g_tsl_demo.bluetooth_mac, my_strlen((unsigned char *)g_tsl_demo.bluetooth_mac));
+
+    mcu_tsl_datap_update(&g_datap, 0);
+
+#else
+    mcu_tsl_value_update(TSLID_BATTERY_PERCENTAGE_INT, g_tsl_demo.battery_percentage);
+    mcu_tsl_value_update(TSLID_REMAIN_TIME_INT, g_tsl_demo.remain_time);
+    mcu_tsl_value_update(TSLID_REMAIN_CHARGING_TIME_INT, g_tsl_demo.remain_charging_time);
+    mcu_tsl_value_update(TSLID_TOTAL_INPUT_POWER_INT, g_tsl_demo.total_input_power);
+    mcu_tsl_value_update(TSLID_TOTAL_OUTPUT_POWER_INT, g_tsl_demo.total_output_power);
+
+    ac_info_update();
+
+    usb_data_update();
+
+    typec_data_update();
+
+    dc_data_update();
+
+    mcu_tsl_value_update(TSLID_LED_STATUS_INT, g_tsl_demo.led_status);
+    mcu_tsl_value_update(TSLID_AC_INPUT_INT, g_tsl_demo.ac_input_power);
+    mcu_tsl_value_update(TSLID_DC_INPUT_INT, g_tsl_demo.dc_input_power);
+    mcu_tsl_value_update(TSLID_USB_INPUT_INT, g_tsl_demo.usb_input_power);
+    mcu_tsl_value_update(TSLID_TEMP_INT, g_tsl_demo.temp);
+    mcu_tsl_value_update(TSLID_DEVICE_STATUS_INT, g_tsl_demo.device_status);
+   
+    mcu_tsl_value_update(TSLID_STANDBY_TIME_INT, g_tsl_demo.standby_time);
+    mcu_tsl_value_update(TSLID_SCREEN_TIME_INT, g_tsl_demo.screen_time);
+    mcu_tsl_value_update(TSLID_AC_STANDBY_TIME_INT, g_tsl_demo.ac_standby_time);
+    mcu_tsl_value_update(TSLID_DC_STANDBY_TIME_INT, g_tsl_demo.dc_standby_time);
+    mcu_tsl_value_update(TSLID_AC_CHARGING_POWER_LIMIT_INT, g_tsl_demo.ac_power_limit);
+    mcu_tsl_value_update(TSLID_BEEP_INT, g_tsl_demo.beep);
+    mcu_tsl_value_update(TSLID_SCREEN_BRIGHTNESS_INT, g_tsl_demo.screen_brightness);
+    mcu_tsl_value_update(TSLID_DEVICE_WORK_MODE_INT, g_tsl_demo.device_mode);
+
+    timing_update();
+
+    mcu_tsl_string_update(TSLID_DEVICE_MODEL_STRING,
+     (const unsigned char *)g_tsl_demo.device_sn, my_strlen((unsigned char *)g_tsl_demo.device_sn));
+    mcu_tsl_string_update(TSLID_BLUETOOTH_MAC_STRING,
+     (const unsigned char *)g_tsl_demo.bluetooth_mac, my_strlen((unsigned char *)g_tsl_demo.bluetooth_mac));
+
+#endif
 }
 
 
-/******************************************************************************
-                                WARNING!!!    
-                            2:所有数据上报处理
-                            具体请用户自行实现数据处理
-******************************************************************************/
+
 /*****************************************************************************
-函数名称 : dp_download_test_bool_handle
-功能描述 : 针对DPID_TEST_BOOL的处理函数
+函数名称 : tsl_download_led_status_int_handle
+功能描述 : 针对 TSLID_LED_STATUS_INT 的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char dp_download_test_bool_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_led_status_int_handle(const unsigned char value[], unsigned short length)
 {
-    //示例:当前DP类型为BOOL
-    unsigned char ret;
-    //0:off/1:on
-    unsigned char bool_value;
+    unsigned char ret = SUCCESS;
     
-    bool_value = mcu_get_dp_download_bool(value,length);
-    if(bool_value == 0) {
-        //bool off
-        printf("set off\r\n");
-    }else {
-        printf("set on\r\n");
-    }
-  
-    //There should be a report after processing the DP
-    ret = mcu_dp_bool_update(DPID_TEST_BOOL,bool_value);
+    g_tsl_demo.led_status = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.led_status:%d\r\n", g_tsl_demo.led_status);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_LED_STATUS_INT,g_tsl_demo.led_status);
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -148,113 +478,24 @@ static unsigned char dp_download_test_bool_handle(const unsigned char value[], u
 }
 
 /*****************************************************************************
-函数名称 : dp_download_test_value_handle
-功能描述 : 针对DPID_TEST_VALUE的处理函数
+函数名称 : tsl_download_device_status_int_handle
+功能描述 : 针对 TSLID_DEVICE_STATUS_INT 的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char dp_download_test_value_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_device_status_int_handle(const unsigned char value[], unsigned short length)
 {
-    //示例:当前DP类型为VALUE
     unsigned char ret = SUCCESS;
-    unsigned long int_value;
     
-    int_value = mcu_get_dp_download_value(value,length);
-    /*
-    //VALUE type data processing
-    
-    */
-
-    printf("set int_value:%ld\r\n", int_value);
-    
-    //There should be a report after processing the DP
-    ret = mcu_dp_value_update(DPID_TEST_VALUE,int_value);
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-
-/*****************************************************************************
-函数名称 : dp_download_test_string_handle
-功能描述 : 针对DPID_TEST_STRING的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char dp_download_test_string_handle(const unsigned char value[], unsigned short length)
-{
-    //示例:当前DP类型为STRING
-    unsigned char ret = SUCCESS;
-    unsigned char string_value[100] = {0};
-    unsigned short string_len = 0;
-    
-    mcu_get_dp_download_string(value,length,string_value, &string_len);
+    g_tsl_demo.device_status = mcu_get_tsl_download_value(value,length);
 
 
-    printf("set string_value:%s\r\n", string_value);
+    printf("set g_tsl_demo.device_status:%d\r\n", g_tsl_demo.device_status);
     
-    //There should be a report after processing the DP
-    ret = mcu_dp_string_update(DPID_TEST_STRING,string_value,strlen((const char *)string_value));
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-
-
-/*****************************************************************************
-函数名称 : dp_download_test_fault_handle
-功能描述 : 针对DPID_TEST_FAULT的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char dp_download_test_fault_handle(const unsigned char value[], unsigned short length)
-{
-    //示例:当前DP类型为ENUM
-    unsigned char ret = SUCCESS;
-    unsigned long enum_value;
-    
-    enum_value = mcu_get_dp_download_fault(value,length);
-
-    
-    printf("set fault_value:0x%0ld\r\n", enum_value);
-    
-    //There should be a report after processing the DP
-    ret = mcu_dp_fault_update(DPID_TEST_FAULT,enum_value);
-    if(ret == SUCCESS)
-        return SUCCESS;
-    else
-        return ERROR;
-}
-
-
-/*****************************************************************************
-函数名称 : dp_download_test_double_handle
-功能描述 : 针对DPID_TEST_DOUBLE的处理函数
-输入参数 : value:数据源数据
-        : length:数据长度
-返回参数 : 成功返回:SUCCESS/失败返回:ERROR
-使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
-*****************************************************************************/
-static unsigned char dp_download_test_double_handle(const unsigned char value[], unsigned short length)
-{
-    //示例:当前DP类型为DOUBLE
-    unsigned char ret = SUCCESS;
-    double double_value;
-    
-    double_value = mcu_get_dp_download_double(value,length);
-
-    
-    printf("set double_value:%f\r\n", double_value);
-    
-    //There should be a report after processing the DP
-    ret = mcu_dp_double_update(DPID_TEST_DOUBLE,double_value);
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_DEVICE_STATUS_INT,g_tsl_demo.device_status);
     if(ret == SUCCESS)
         return SUCCESS;
     else
@@ -263,91 +504,609 @@ static unsigned char dp_download_test_double_handle(const unsigned char value[],
 
 
 
+
 /*****************************************************************************
-函数名称 : dp_download_test_struct_handle
-功能描述 : 针对DPID_TEST_STRUCT的处理函数
+函数名称 : tsl_download_standby_time_int_handle
+功能描述 : 针对 TSLID_STANDBY_TIME_INT 的处理函数
 输入参数 : value:数据源数据
         : length:数据长度
 返回参数 : 成功返回:SUCCESS/失败返回:ERROR
 使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
 *****************************************************************************/
-static unsigned char dp_download_test_struct_handle(const unsigned char value[], unsigned short length)
+static unsigned char tsl_download_standby_time_int_handle(const unsigned char value[], unsigned short length)
 {
-    // 示例:当前DP类型为STRUCT
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.standby_time = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.standby_time:%d\r\n", g_tsl_demo.standby_time);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_STANDBY_TIME_INT, g_tsl_demo.standby_time);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
+/*****************************************************************************
+函数名称 : tsl_download_standby_time_int_handle
+功能描述 : 针对 TSLID_SCREEN_TIME_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_screen_time_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.screen_time = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.screen_time:%d\r\n", g_tsl_demo.screen_time);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_SCREEN_TIME_INT, g_tsl_demo.screen_time);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+/*****************************************************************************
+函数名称 : tsl_download_ac_standby_time_int_handle
+功能描述 : 针对 TSLID_AC_STANDBY_TIME_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_ac_standby_time_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.ac_standby_time = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.ac_standby_time:%d\r\n", g_tsl_demo.ac_standby_time);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_AC_STANDBY_TIME_INT, g_tsl_demo.ac_standby_time);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+/*****************************************************************************
+函数名称 : tsl_download_dc_standby_time_int_handle
+功能描述 : 针对 TSLID_DC_STANDBY_TIME_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_dc_standby_time_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.dc_standby_time = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.dc_standby_time:%d\r\n", g_tsl_demo.dc_standby_time);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_DC_STANDBY_TIME_INT, g_tsl_demo.dc_standby_time);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+/*****************************************************************************
+函数名称 : tsl_download_ac_charging_power_limit_int_handle
+功能描述 : 针对 TSLID_AC_CHARGING_POWER_LIMIT_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_ac_charging_power_limit_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.ac_power_limit = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.ac_power_limit:%d\r\n", g_tsl_demo.ac_power_limit);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_AC_CHARGING_POWER_LIMIT_INT, g_tsl_demo.ac_power_limit);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+/*****************************************************************************
+函数名称 : tsl_download_beep_int_handle
+功能描述 : 针对 TSLID_BEEP_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_beep_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.beep = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.beep:%d\r\n", g_tsl_demo.screen_time);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_BEEP_INT, g_tsl_demo.beep);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+/*****************************************************************************
+函数名称 : tsl_download_screen_brightness_int_handle
+功能描述 : 针对 TSLID_SCREEN_BRIGHTNESS_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_screen_brightness_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.screen_brightness = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.screen_brightness:%d\r\n", g_tsl_demo.screen_brightness);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_SCREEN_BRIGHTNESS_INT, g_tsl_demo.screen_brightness);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
+/*****************************************************************************
+函数名称 : tsl_download_device_work_mode_int_handle
+功能描述 : 针对 TSLID_DEVICE_WORK_MODE_INT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_device_work_mode_int_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+    
+    g_tsl_demo.device_mode = mcu_get_tsl_download_value(value,length);
+
+
+    printf("set g_tsl_demo.device_mode:%d\r\n", g_tsl_demo.device_mode);
+    
+    //There should be a report after processing the tsl
+    ret = mcu_tsl_value_update(TSLID_DEVICE_WORK_MODE_INT, g_tsl_demo.device_mode);
+    if(ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
+
+
+
+
+
+/*****************************************************************************
+函数名称 : tsl_download_ac_info_struct_handle
+功能描述 : 针对 TSLID_AC_INFO_STRUCT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_ac_info_struct_handle(const unsigned char value[], unsigned short length)
+{
     unsigned char ret = SUCCESS;
 
-    mcu_dp_struct_t st = {0};
-    unsigned short dpid;
-    unsigned char dp_type;
-    unsigned char dp_value[100] = {0};
-    unsigned short dp_length = 0;
+    // 解析下发结构体数据变量定义
+    mcu_tsl_struct_t st = {0};
+    unsigned short tslid;
+    unsigned char tsl_type;
+    unsigned char tsl_value[100] = {0};
+    unsigned short tsl_length = 0;
 
-    unsigned long int_value;
-    unsigned char bool_value;
-    double double_value;
-    unsigned char string_value[100] = {0};
-    unsigned short string_len = 0;
+       // 解析结构体数据
+    mcu_tsl_struct_parser(&st, (unsigned char *)value, length);
 
-    mcu_dp_struct_t st_send = {0};
-    unsigned char buf[200] = {0};
-    mcu_dp_struct_init(DPID_TEST_STRUCT, &st_send, buf, sizeof(buf));
-
-    mcu_dp_struct_parser(&st, (unsigned char *)value, length);
-
-    while (mcu_dp_struct_get_item(&st, &dpid, &dp_type, dp_value, &dp_length))
+    // 循环迭代解析结构体的每个成员数据
+    while (mcu_tsl_struct_get_item(&st, &tslid, &tsl_type, tsl_value, &tsl_length))
     {
-        switch (dpid)
+        switch (tslid)
         {
-        case DPID_TEST_STRUCT_SUB_VALUE:
-        {
-
-            int_value = mcu_get_dp_download_value(dp_value, dp_length);
-            printf("set sub int_value:%ld\r\n", int_value);
-            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_VALUE, &st_send, DP_TYPE_VALUE, (unsigned char *)&int_value, sizeof(int_value));
-        }
+        case TSLID_AC_INFO_STRUCT_AC_SWITCH_BOOL:
+            g_tsl_demo.ac_info.ac_switch = mcu_get_tsl_download_bool(tsl_value, tsl_length);
+            printf("set g_tsl_demo.ac_info.ac_switch:%d\r\n", g_tsl_demo.ac_info.ac_switch);
         break;
-        case DPID_TEST_STRUCT_SUB_BOOL:
-        {
-
-            bool_value = mcu_get_dp_download_bool(value, length);
-            if (bool_value == 0)
-            {
-                printf("set sub bool off\r\n");
-            }
-            else
-            {
-                printf("set sub bool on\r\n");
-            }
-            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_BOOL, &st_send, DP_TYPE_BOOL, (unsigned char *)&bool_value, sizeof(bool_value));
-        }
+        case TSLID_AC_INFO_STRUCT_AC1_OUTPUT_INT:
+            g_tsl_demo.ac_info.ac1_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.ac_info.ac1_output:%d\r\n", g_tsl_demo.ac_info.ac1_output);
+        break;
+        case TSLID_AC_INFO_STRUCT_AC1_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.ac_info.ac1_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.ac_info.ac1_output_voltage:%d\r\n", g_tsl_demo.ac_info.ac1_output_voltage);
+        break;
+        case TSLID_AC_INFO_STRUCT_AC1_OUTPUT_CURRENT_INT:
+            g_tsl_demo.ac_info.ac1_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.ac_info.ac1_output_current:%d\r\n", g_tsl_demo.ac_info.ac1_output_current);
+        break;
+        case TSLID_AC_INFO_STRUCT_AC2_OUTPUT_INT:
+            g_tsl_demo.ac_info.ac2_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.ac_info.ac2_output:%d\r\n", g_tsl_demo.ac_info.ac2_output);
+        break;
+        case TSLID_AC_INFO_STRUCT_AC2_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.ac_info.ac2_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.ac_info.ac2_output_voltage:%d\r\n", g_tsl_demo.ac_info.ac2_output_voltage);
+        break;
+        case TSLID_AC_INFO_STRUCT_AC2_OUTPUT_CURRENT_INT:
+            g_tsl_demo.ac_info.ac2_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.ac_info.ac2_output_current:%d\r\n", g_tsl_demo.ac_info.ac2_output_current);
         break;
 
-        case DPID_TEST_STRUCT_SUB_DOUBLE:
-        {
-
-            double_value = mcu_get_dp_download_double(dp_value, dp_length);
-
-            printf("set sub double_value:%f\r\n", double_value);
-            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_DOUBLE, &st_send, DP_TYPE_DOUBLE, (unsigned char *)&double_value, sizeof(double_value));
-        }
-        break;
-        case DPID_TEST_STRUCT_SUB_STRING:
-        {
-
-            mcu_get_dp_download_string(dp_value, dp_length, string_value, &string_len);
-
-            printf("set string_value:%s\r\n", string_value);
-            mcu_dp_struct_add_item(DPID_TEST_STRUCT_SUB_STRING, &st_send, DP_TYPE_STRING, (unsigned char *)&string_value, strlen((const char *)string_value));
-            break;
-        }
         default:
             break;
         }
     }
 
-    // There should be a report after processing the DP
+    // There should be a report after processing the tsl
 
-    mcu_dp_struct_update(&st_send); //结构体型数据上报;
+    ret = ac_info_update();
+
+    if (ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
+/*****************************************************************************
+函数名称 : tsl_download_usb_data_struct_handle
+功能描述 : 针对 TSLID_USB_DATA_STRUCT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_usb_data_struct_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+
+    // 解析下发结构体数据变量定义
+    mcu_tsl_struct_t st = {0};
+    unsigned short tslid;
+    unsigned char tsl_type;
+    unsigned char tsl_value[100] = {0};
+    unsigned short tsl_length = 0;
+
+       // 解析结构体数据
+    mcu_tsl_struct_parser(&st, (unsigned char *)value, length);
+
+    // 循环迭代解析结构体的每个成员数据
+    while (mcu_tsl_struct_get_item(&st, &tslid, &tsl_type, tsl_value, &tsl_length))
+    {
+        switch (tslid)
+        {
+        case TSLID_USB_DATA_STRUCT_USB_SWITCH_BOOL:
+            g_tsl_demo.usb_data.usb_switch = mcu_get_tsl_download_bool(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb_switch:%d\r\n", g_tsl_demo.usb_data.usb_switch);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB1_OUTPUT_INT:
+            g_tsl_demo.usb_data.usb1_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb1_output:%d\r\n", g_tsl_demo.usb_data.usb1_output);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB1_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.usb_data.usb1_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb1_output_voltage:%d\r\n", g_tsl_demo.usb_data.usb1_output_voltage);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB1_OUTPUT_CURRENT_INT:
+            g_tsl_demo.usb_data.usb1_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb1_output_current:%d\r\n", g_tsl_demo.usb_data.usb1_output_current);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB2_OUTPUT_INT:
+            g_tsl_demo.usb_data.usb2_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb2_output:%d\r\n", g_tsl_demo.usb_data.usb2_output);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB2_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.usb_data.usb2_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb2_output_voltage:%d\r\n", g_tsl_demo.usb_data.usb2_output_voltage);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB2_OUTPUT_CURRENT_INT:
+            g_tsl_demo.usb_data.usb2_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb2_output_current:%d\r\n", g_tsl_demo.usb_data.usb2_output_current);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB3_OUTPUT_INT:
+            g_tsl_demo.usb_data.usb3_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb3_output:%d\r\n", g_tsl_demo.usb_data.usb3_output);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB3_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.usb_data.usb3_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb3_output_voltage:%d\r\n", g_tsl_demo.usb_data.usb3_output_voltage);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB3_OUTPUT_CURRENT_INT:
+            g_tsl_demo.usb_data.usb3_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb3_output_current:%d\r\n", g_tsl_demo.usb_data.usb3_output_current);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB4_OUTPUT_INT:
+            g_tsl_demo.usb_data.usb4_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb4_output:%d\r\n", g_tsl_demo.usb_data.usb4_output);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB4_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.usb_data.usb4_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb4_output_voltage:%d\r\n", g_tsl_demo.usb_data.usb4_output_voltage);
+        break;
+        case TSLID_USB_DATA_STRUCT_USB4_OUTPUT_CURRENT_INT:
+            g_tsl_demo.usb_data.usb4_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.usb_data.usb4_output_current:%d\r\n", g_tsl_demo.usb_data.usb4_output_current);
+        break;
+        
+        default:
+            break;
+        }
+    }
+
+    // There should be a report after processing the tsl
+
+    ret = usb_data_update();
+
+    if (ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
+/*****************************************************************************
+函数名称 : tsl_download_typec_data_struct_handle
+功能描述 : 针对 TSLID_TYPEC_DATA_STRUCT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_typec_data_struct_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+
+    // 解析下发结构体数据变量定义
+    mcu_tsl_struct_t st = {0};
+    unsigned short tslid;
+    unsigned char tsl_type;
+    unsigned char tsl_value[100] = {0};
+    unsigned short tsl_length = 0;
+
+       // 解析结构体数据
+    mcu_tsl_struct_parser(&st, (unsigned char *)value, length);
+
+    // 循环迭代解析结构体的每个成员数据
+    while (mcu_tsl_struct_get_item(&st, &tslid, &tsl_type, tsl_value, &tsl_length))
+    {
+        switch (tslid)
+        {
+        case TSLID_TYPEC_DATA_STRUCT_TYPEC_SWITCH_BOOL:
+            g_tsl_demo.typec_data.typec_switch = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.typec_data.typec_switch:%d\r\n", g_tsl_demo.typec_data.typec_switch);
+        break;
+        case TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_INT:
+            g_tsl_demo.typec_data.typec1_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.typec_data.typec1_output:%d\r\n", g_tsl_demo.typec_data.typec1_output);
+        break;
+        case TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.typec_data.typec1_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.typec_data.typec1_output_voltage:%d\r\n", g_tsl_demo.typec_data.typec1_output_voltage);
+        break;
+        case TSLID_TYPEC_DATA_STRUCT_TYPEC1_OUTPUT_CURRENT_INT:
+            g_tsl_demo.typec_data.typec1_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.typec_data.typec1_output_current:%d\r\n", g_tsl_demo.typec_data.typec1_output_current);
+        break;
+        case TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_INT:
+            g_tsl_demo.typec_data.typec2_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.typec_data.typec2_output:%d\r\n", g_tsl_demo.typec_data.typec2_output);
+        break;
+        case TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.typec_data.typec2_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.typec_data.typec2_output_voltage:%d\r\n", g_tsl_demo.typec_data.typec2_output_voltage);
+        break;
+        case TSLID_TYPEC_DATA_STRUCT_TYPEC2_OUTPUT_CURRENT_INT:
+            g_tsl_demo.typec_data.typec2_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.typec_data.typec2_output_current:%d\r\n", g_tsl_demo.typec_data.typec2_output_current);
+        break;
+
+        default:
+            break;
+        }
+    }
+
+    // There should be a report after processing the tsl
+
+    ret = typec_data_update();
+
+    if (ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
+/*****************************************************************************
+函数名称 : tsl_download_dc_data_struct_handle
+功能描述 : 针对 TSLID_DC_DATA_STRUCT 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_dc_data_struct_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+
+    // 解析下发结构体数据变量定义
+    mcu_tsl_struct_t st = {0};
+    unsigned short tslid;
+    unsigned char tsl_type;
+    unsigned char tsl_value[100] = {0};
+    unsigned short tsl_length = 0;
+
+       // 解析结构体数据
+    mcu_tsl_struct_parser(&st, (unsigned char *)value, length);
+
+    // 循环迭代解析结构体的每个成员数据
+    while (mcu_tsl_struct_get_item(&st, &tslid, &tsl_type, tsl_value, &tsl_length))
+    {
+        switch (tslid)
+        {
+        case TSLID_DC_DATA_STRUCT_DC_SWITCH_BOOL:
+            g_tsl_demo.dc_data.dc_switch = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.dc_switch:%d\r\n", g_tsl_demo.dc_data.dc_switch);
+        break;
+        case TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_INT:
+            g_tsl_demo.dc_data.car1_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.car1_output:%d\r\n", g_tsl_demo.dc_data.car1_output);
+        break;
+        case TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.dc_data.car1_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.car1_output_voltage:%d\r\n", g_tsl_demo.dc_data.car1_output_voltage);
+        break;
+        case TSLID_DC_DATA_STRUCT_CAR1_OUTPUT_CURRENT_INT:
+            g_tsl_demo.dc_data.car1_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.car1_output_current:%d\r\n", g_tsl_demo.dc_data.car1_output_current);
+        break;
+        case TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_INT:
+            g_tsl_demo.dc_data.car2_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.car2_output:%d\r\n", g_tsl_demo.dc_data.car2_output);
+        break;
+        case TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.dc_data.car2_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.car2_output_voltage:%d\r\n", g_tsl_demo.dc_data.car2_output_voltage);
+        break;
+        case TSLID_DC_DATA_STRUCT_CAR2_OUTPUT_CURRENT_INT:
+            g_tsl_demo.dc_data.car2_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.car2_output_current:%d\r\n", g_tsl_demo.dc_data.car2_output_current);
+        break;
+        case TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_INT:
+            g_tsl_demo.dc_data.dc12v1_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.dc12v1_output:%d\r\n", g_tsl_demo.dc_data.dc12v1_output);
+        break;
+        case TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.dc_data.dc12v1_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.dc12v1_output_voltage:%d\r\n", g_tsl_demo.dc_data.dc12v1_output_voltage);
+        break;
+        case TSLID_DC_DATA_STRUCT_DC12V1_OUTPUT_CURRENT_INT:
+            g_tsl_demo.dc_data.dc12v1_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.dc12v1_output_current:%d\r\n", g_tsl_demo.dc_data.dc12v1_output_current);
+        break;
+        case TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_INT:
+            g_tsl_demo.dc_data.dc12v2_output = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.dc12v2_output:%d\r\n", g_tsl_demo.dc_data.dc12v2_output);
+        break;
+        case TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_VOLTAGE_INT:
+            g_tsl_demo.dc_data.dc12v2_output_voltage = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.dc12v2_output_voltage:%d\r\n", g_tsl_demo.dc_data.dc12v2_output_voltage);
+        break;
+        case TSLID_DC_DATA_STRUCT_DC12V2_OUTPUT_CURRENT_INT:
+            g_tsl_demo.dc_data.dc12v2_output_current = mcu_get_tsl_download_value(tsl_value, tsl_length);
+            printf("set g_tsl_demo.dc_data.dc12v2_output_current:%d\r\n", g_tsl_demo.dc_data.dc12v2_output_current);
+        break;
+
+        default:
+            break;
+        }
+    }
+
+    // There should be a report after processing the tsl
+
+    ret = dc_data_update();
+
+    if (ret == SUCCESS)
+        return SUCCESS;
+    else
+        return ERROR;
+}
+
+
+/*****************************************************************************
+函数名称 : tsl_download_timing_arrary_handle
+功能描述 : 针对 TSLID_TIMING_ARRARY 的处理函数
+输入参数 : value:数据源数据
+        : length:数据长度
+返回参数 : 成功返回:SUCCESS/失败返回:ERROR
+使用说明 : 可下发可上报类型,需要在处理完数据后上报处理结果至app
+*****************************************************************************/
+static unsigned char tsl_download_timing_arrary_handle(const unsigned char value[], unsigned short length)
+{
+    unsigned char ret = SUCCESS;
+
+    // 解析下发结构体数据变量定义
+    mcu_tsl_struct_t st = {0};
+    unsigned short tslid;
+    unsigned char tsl_type;
+    unsigned char tsl_value[100] = {0};
+    unsigned short tsl_length = 0;
+    int index = 0;
+
+     mcu_tsl_struct_t item_st = {0};
+    unsigned short item_tslid;
+    unsigned char item_tsl_type;
+    unsigned char item_tsl_value[100] = {0};
+    unsigned short item_tsl_length = 0;
+
+    // 解析数组数据
+    mcu_tsl_struct_parser(&st, (unsigned char *)value, length);
+
+    // 循环迭代解析数组的每个成员数据
+    while (mcu_tsl_struct_get_item(&st, &tslid, &tsl_type, tsl_value, &tsl_length))
+    {
+        mcu_tsl_struct_parser(&item_st, (unsigned char *)tsl_value, tsl_length);
+        while (mcu_tsl_struct_get_item(&item_st, &item_tslid, &item_tsl_type, item_tsl_value, &item_tsl_length))
+        {
+            switch (item_tslid)
+            {
+            case TSLID_TIMING_ARRARY_TIME_INT:
+                g_tsl_demo.timing[index].time = mcu_get_tsl_download_value(item_tsl_value, item_tsl_length);
+                printf("set g_tsl_demo.timing[%d].time:%d\r\n", index, g_tsl_demo.timing[index].time);
+            break;
+            case TSLID_TIMING_ARRARY_ACTION_BOOL:
+                g_tsl_demo.timing[index].action = mcu_get_tsl_download_value(item_tsl_value, item_tsl_length);
+                printf("set g_tsl_demo.timing[%d].action:%d\r\n", index, g_tsl_demo.timing[index].action);
+            break;
+            case TSLID_TIMING_ARRARY_ACTION_STATUS_BOOL:
+                g_tsl_demo.timing[index].action_status = mcu_get_tsl_download_value(item_tsl_value, item_tsl_length);
+                printf("set g_tsl_demo.timing[%d].action_status:%d\r\n", index, g_tsl_demo.timing[index].action_status);
+            default:
+                break;
+            }
+        }
+        index++;
+    }
+
+    // There should be a report after processing the tsl
+
+    ret = timing_update();
 
     if (ret == SUCCESS)
         return SUCCESS;
@@ -356,21 +1115,117 @@ static unsigned char dp_download_test_struct_handle(const unsigned char value[],
 }
 
 /******************************************************************************
+                                WARNING!!!    
+                            2:所有数据上报处理
+                            具体请用户自行实现数据处理
+******************************************************************************/
+
+/******************************************************************************
                                 WARNING!!!                     
 此部分函数用户请勿修改!!
 ******************************************************************************/
 
+#ifdef SUPPORT_MCU_FIRM_UPDATE
 /**
- * @brief  dp下发处理函数
- * @param[in] {dpid} dpid 序号
- * @param[in] {value} dp数据缓冲区地址
- * @param[in] {length} dp数据长度
- * @return dp处理结果
+ * @brief  升级包大小选择
+ * @param[in] {fr_type} 帧类型
+ * @param[in] {package_sz} 升级包大小
+ * @ref           0x00: 256byte (默认)
+ * @ref           0x01: 512byte
+ * @ref           0x02: 1024byte
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+void mcu_upgrade_package_choose(unsigned char fr_type, unsigned char package_sz)
+{
+    // #error "请自行实现请自行实现升级包大小选择代码,完成后请删除该行"
+    unsigned short send_len = 0;
+    send_len = set_wifi_uart_byte(send_len, package_sz);
+	wifi_uart_write_frame(fr_type, MCU_TX_VER, send_len);
+}
+
+/**
+ * @brief  MCU进入固件升级模式
+ * @param[in] {value} 固件缓冲区
+ * @param[in] {position} 当前数据包在于固件位置
+ * @param[in] {length} 当前固件包长度(固件包长度为0时,表示固件包发送完成)
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+#if 1
+unsigned char mcu_firm_update_handle(const unsigned char* module_name, const unsigned char value[],unsigned long position,unsigned short length)
+{
+    // #error "请自行完成MCU固件升级代码,完成后请删除该行"
+    if(length == 0) {
+        //固件数据发送完成
+        /* 接受完成需要重启进入bootloader完成升级（上报新的版本），如果不重启，FC41D询问MCU版本，而MCU仍然回复历史版本，固件将会被重复下发五次 */
+    }else {
+        //固件数据处理
+      
+    }
+    
+    return SUCCESS;
+}
+
+#else
+// OTA示例参考代码
+unsigned char mcu_firm_update_handle(const unsigned char* module_name, const unsigned char value[],unsigned long position,unsigned short length)
+{
+    static FILE *fp = NULL;
+	static unsigned char module[32] = {0};
+
+    if(length == 0) {
+        //固件数据发送完成
+        long size = ftell(fp);
+        printf("=============================================================================Package Received OK! Total Length:%d Bytes(%d Kb)\r\n", size, size/1024);
+
+        fclose(fp);
+        fp = NULL;
+        //这里强制终止进程，客户可以校验通过后，重启进入bootloader，如果不重启，FC41D询问MCU版本，而MCU仍然回复"1.0.0"，那么会造成固件重复下发。
+        exit(0);
+    }else {
+        if(fp == NULL)
+		{
+#ifdef SUPPORT_MULTI_COMPONENT
+			if (NULL != module_name)
+			{
+				memset(module, 0, sizeof(module));
+				sprintf((char*)module, "%s.bin", module_name);
+				printf("<%s:%d>module name = %s\r\n", __FILE__, __LINE__, module);/*tips*/
+				fp = fopen((char*)module, "wb");
+			}
+			else
+#endif
+				fp = fopen("mcu_firmware.bin", "wb");
+		}
+
+        fseek(fp, position, SEEK_SET);
+        fwrite(value, length, 1, fp);
+
+        //固件数据处理
+        if(position == 0)
+        {
+            printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! This is a new Transmission !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\r\n");
+        }
+        printf("=============================================================================Frame Received Offset:%d -- length:%d\r\n", position, length);
+    }
+
+    return SUCCESS;
+}
+#endif
+#endif
+
+/**
+ * @brief  tsl下发处理函数
+ * @param[in] {tslid} tslid 序号
+ * @param[in] {value} tsl数据缓冲区地址
+ * @param[in] {length} tsl数据长度
+ * @return tsl处理结果
  * -           0(ERROR): 失败
  * -           1(SUCCESS): 成功
  * @note   该函数用户不能修改
  */
-unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[], unsigned short length)
+unsigned char tsl_download_handle(unsigned short tslid,const unsigned char value[], unsigned short length)
 {
     /*********************************
     当前函数处理可下发/可上报数据调用                    
@@ -378,36 +1233,61 @@ unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[]
     完成用需要将处理结果反馈至APP端,否则APP会认为下发失败
     ***********************************/
     unsigned char ret = SUCCESS;
-    switch(dpid) {
-        #if 0
-        case DPID_TEST_RAW :
-            //测试RAW类型数据处理函数
-            ret = dp_download_test_raw_handle(value,length);
+    switch(tslid) {
+        case TSLID_AC_INFO_STRUCT:
+            ret = tsl_download_ac_info_struct_handle(value, length);
         break;
-        #endif
-        case DPID_TEST_BOOL:
-            //测试BOOL类型数据处理函数
-            ret = dp_download_test_bool_handle(value,length);
+
+        
+
+        case TSLID_USB_DATA_STRUCT:
+            ret = tsl_download_usb_data_struct_handle(value, length);
         break;
-        case DPID_TEST_VALUE:
-            //测试VALUE类型数据处理函数
-            ret = dp_download_test_value_handle(value,length);
+
+        case TSLID_TYPEC_DATA_STRUCT:
+            ret = tsl_download_typec_data_struct_handle(value, length);
         break;
-        case DPID_TEST_STRING:
-            //测试STRING类型数据处理函数
-            ret = dp_download_test_string_handle(value,length);
+
+        case TSLID_DC_DATA_STRUCT:
+            ret = tsl_download_dc_data_struct_handle(value, length);
         break;
-        case DPID_TEST_FAULT: 
-            //测试FAULT类型数据处理函数
-            ret = dp_download_test_fault_handle(value,length);
+
+        case TSLID_LED_STATUS_INT:
+            ret = tsl_download_led_status_int_handle(value, length);
         break;
-        case DPID_TEST_DOUBLE:
-            //测试DOUBLE类型数据处理函数
-            ret = dp_download_test_double_handle(value,length);
+
+        case TSLID_DEVICE_STATUS_INT:
+            ret = tsl_download_device_status_int_handle(value, length);
+
+        case TSLID_STANDBY_TIME_INT:
+            ret = tsl_download_standby_time_int_handle(value, length);
         break;
-        case DPID_TEST_STRUCT:
-            //测试STRUCT类型数据处理函数
-            ret = dp_download_test_struct_handle(value,length);
+
+        case TSLID_SCREEN_TIME_INT:
+            ret = tsl_download_screen_time_int_handle(value, length);
+        break;
+        case TSLID_AC_STANDBY_TIME_INT:
+            ret = tsl_download_ac_standby_time_int_handle(value, length);
+        break;
+        case TSLID_DC_STANDBY_TIME_INT:
+            ret = tsl_download_dc_standby_time_int_handle(value, length);
+        break;
+        case TSLID_AC_CHARGING_POWER_LIMIT_INT:
+            ret = tsl_download_ac_charging_power_limit_int_handle(value, length);   
+        break;
+        case TSLID_BEEP_INT:
+            ret = tsl_download_beep_int_handle(value, length);
+        break;
+        case TSLID_SCREEN_BRIGHTNESS_INT:
+            ret = tsl_download_screen_brightness_int_handle(value, length);
+        break;
+        case TSLID_DEVICE_WORK_MODE_INT:
+            ret = tsl_download_device_work_mode_int_handle(value, length);
+        break;
+        case TSLID_TIMING_ARRARY:
+            ret = tsl_download_timing_arrary_handle(value, length);
+        break;
+
         default:
         break;
     }
@@ -415,7 +1295,7 @@ unsigned char dp_download_handle(unsigned short dpid,const unsigned char value[]
 }
 
 /**
- * @brief  获取所有dp命令总和
+ * @brief  获取所有tsl命令总和
  * @param[in] Null
  * @return 下发命令总和
  * @note   该函数用户不能修改
@@ -428,49 +1308,8 @@ unsigned char get_download_cmd_total(void)
 
 /******************************************************************************
                                 WARNING!!!                     
-此代码为SDK内部调用,请按照实际dp数据实现函数内部数据
+此代码为SDK内部调用,请按照实际tsl数据实现函数内部数据
 ******************************************************************************/
-
-#ifdef SUPPORT_MCU_FIRM_UPDATE
-/**
- * @brief  升级包大小选择
- * @param[in] {package_sz} 升级包大小
- * @ref           0x00: 256byte (默认)
- * @ref           0x01: 512byte
- * @ref           0x02: 1024byte
- * @return Null
- * @note   MCU需要自行实现该功能
- */
-void upgrade_package_choose(unsigned char package_sz)
-{
-    #error "请自行实现请自行实现升级包大小选择代码,完成后请删除该行"
-    unsigned short send_len = 0;
-    send_len = set_wifi_uart_byte(send_len, package_sz);
-    wifi_uart_write_frame(UPDATE_START_CMD, MCU_TX_VER, send_len);
-}
-
-/**
- * @brief  MCU进入固件升级模式
- * @param[in] {value} 固件缓冲区
- * @param[in] {position} 当前数据包在于固件位置
- * @param[in] {length} 当前固件包长度(固件包长度为0时,表示固件包发送完成)
- * @return Null
- * @note   MCU需要自行实现该功能
- */
-unsigned char mcu_firm_update_handle(const unsigned char value[],unsigned long position,unsigned short length)
-{
-    #error "请自行完成MCU固件升级代码,完成后请删除该行"
-    if(length == 0) {
-        //固件数据发送完成
-      
-    }else {
-        //固件数据处理
-      
-    }
-    
-    return SUCCESS;
-}
-#endif
 
 #ifdef SUPPORT_GREEN_TIME
 /**
@@ -545,7 +1384,7 @@ void wifi_test_result(unsigned char result,unsigned char rssi)
     if(result == 0) {
         //测试失败
         if(rssi == 0x00) {
-            //未扫描到名称为tuya_mdev_test路由器,请检查
+            //未扫描到名称为quectel_mdev_test路由器,请检查
         }else if(rssi == 0x01) {
             //模块未授权
         }
@@ -557,7 +1396,7 @@ void wifi_test_result(unsigned char result,unsigned char rssi)
 #endif
 
 
-#ifdef MCU_DP_UPLOAD_SYN
+#ifdef MCU_TSL_UPLOAD_SYN
 /**
  * @brief  状态同步上报结果
  * @param[in] {result} 结果
@@ -586,41 +1425,35 @@ void get_upload_syn_result(unsigned char result)
  * @ref       0x02: wifi状态 3 WIFI 已配置但未连上路由器
  * @ref       0x03: wifi状态 4 WIFI 已配置且连上路由器
  * @ref       0x04: wifi状态 5 已连上路由器且连接到云端
+ * @ref       0x05: wifi状态 6 模组处于低功耗模式
  * @return Null
  * @note   MCU需要自行实现该功能
  */
 void get_wifi_status(unsigned char result)
 {
 //   #error "请自行完成获取 WIFI 状态结果代码,并删除该行"
+    wifi_work_state = result;
     printf("result:%d\r\n", result);
 
     switch(result) {
         case 0:
-            //wifi工作状态1
+            // wifi状态 1 Wi-Fi 配网状态（蓝牙处于配网状态）
         break;
-    
-        case 1:
-            //wifi工作状态2
-        break;
-        
+
         case 2:
-            //wifi工作状态3
+            // wifi状态 3 WIFI 已配置但未连上路由器
         break;
         
         case 3:
-            //wifi工作状态4
+            // wifi状态 4 WIFI 已配置且连上路由器
         break;
         
         case 4:
-            //wifi工作状态5
+            // wifi状态 5 已连上路由器且连接到云端
         break;
         
         case 5:
-            //wifi工作状态6
-        break;
-      
-        case 6:
-            //wifi工作状态7
+            // wifi状态 6 模组处于低功耗模式
         break;
         
         default:break;
@@ -653,8 +1486,75 @@ void mcu_get_mac(unsigned char mac[])
         //正确接收到wifi模块返回的mac地址
     }
 }
+
+/**
+ * @brief  获取 BLE 状态结果
+ * @param[in] {result} 指示 WIFI 工作状态
+ * @ref       0x00: ble状态 1 设备未配网，蓝牙未连接
+ * @ref       0x01: ble状态 2 设备未配网，蓝牙已连接
+ * @ref       0x02: ble状态 3 设备已配网，蓝牙未连接
+ * @ref       0x03: ble状态 4 设备已配网，蓝牙已连接
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+void get_ble_status(unsigned char result)
+{
+//   #error "请自行完成获取 WIFI 状态结果代码,并删除该行"
+    ble_work_state = result;
+    printf("result:%d\r\n", result);
+
+    switch(result) {
+        case 0:
+            // ble状态 1 设备未配网，蓝牙未连接
+            break;
+
+        case 1:
+            // ble状态 2 设备未配网，蓝牙已连接
+            break;
+
+        case 2:
+            // ble状态 3 设备已配网，蓝牙未连接
+            break;
+
+        case 3:
+            // ble状态 4 设备已配网，蓝牙已连接
+            break;
+
+
+        default:break;
+    }
+}
+
+/**
+ * @brief  获取当前模组的IP地址
+ * @param[in] {ip} 模块 IP 数据
+ * @return Null
+ * @note   MCU需要自行实现该功能
+ */
+void get_ip_address(unsigned char ip[])
+{
+    /*
+        模组未获取到IP地址，ip[1]的值为0x00
+        模组获取到IP后，ip[1]~ip[N-1]:为当前模组的IP地址
+        N = (*(ip-2)<<8 | *(ip-1)<<0) - 1;
+    */
+    uint16_t length = ((*(ip-2)) << 8 | (*(ip-1)) << 0) - 1;
+
+    printf("IP Address Length:%d\r\n", length);
+    if(ip[1] == 0x00) {
+        printf("Get IP address error!\r\n");
+        return;
+    }else {
+#if 0
+        for(uint8_t i=1; i<=length; i++)
+            printf("i:%d -- %c\r\n", i, ip[i]);
+        printf("\r\n");
 #endif
+    }
 
+    char ip_addr_buff[32] = {0};
+    my_memcpy(ip_addr_buff, &ip[1], length);
+    printf("length:%ld -- IP:%s\r\n", my_strlen((unsigned char *)ip_addr_buff), ip_addr_buff);
+}
 
-
-
+#endif

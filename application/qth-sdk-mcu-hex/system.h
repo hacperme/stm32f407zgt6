@@ -31,6 +31,8 @@
 #define         STATE_QUERY_CMD                 0x08                               //状态查询   
 #define         UPDATE_START_CMD                0x0a                            //升级开始
 #define         UPDATE_TRANS_CMD                0x0b                            //升级传输 
+#define         MULTI_MCU_UPDATE_START_CMD      0x9a                            //多MCU升级开始                           
+#define         MULTI_MCU_UPDATE_TRANS_CMD      0x9b                            //多MCU升级传输
 #define         GET_ONLINE_TIME_CMD             0x0c                            //获取系统时间(格林威治时间)
 #define         WIFI_TEST_CMD                   0x0e                            //wifi功能测试
 #define         GET_LOCAL_TIME_CMD              0x1c                            //获取本地时间
@@ -40,6 +42,8 @@
 
 #define         GET_WIFI_STATUS_CMD             0x2b                            //获取当前wifi联网状态
 #define         GET_MAC_CMD                     0x2d                            //获取模块mac
+#define         GET_BLE_STATUS_CMD              0x35                            //获取蓝牙连接状态
+#define         GET_IP_ADDRESS_CMD              0x90                            //获取模组IP地址
 
 
 //=============================================================================
@@ -60,7 +64,7 @@ SYSTEM_EXTERN volatile unsigned char stop_update_flag;                          
 
 SYSTEM_EXTERN volatile unsigned char reset_wifi_flag;                                                  //重置wifi标志(TRUE:成功/FALSE:失败)
 SYSTEM_EXTERN volatile unsigned char wifi_work_state;                                                  //wifi模块当前工作状态
-
+SYSTEM_EXTERN volatile unsigned char ble_work_state;                                                   //wifi模块当前蓝牙连接状态
 
 /**
  * @brief  写wifi_uart字节
